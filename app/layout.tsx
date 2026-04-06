@@ -8,7 +8,7 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 const crimsonPro = Crimson_Pro({ subsets: ["latin"], variable: "--font-serif" });
 
 export const viewport: Viewport = {
-  themeColor: "#1a1820",
+  themeColor: "#f7f3ed",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
