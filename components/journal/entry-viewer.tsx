@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { WritingEditor } from "./writing-editor"
 import { format } from "date-fns"
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 interface EntryViewerProps {
   entry: JournalEntry
@@ -22,6 +21,15 @@ export function EntryViewer({
 }: EntryViewerProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [formattedDate, setFormattedDate] = useState("")
+
+  useEffect(() => {
+    setMounted(true)
+    setFormattedDate(
+      format(new Date(entry.createdAt), "EEEE, MMMM d, yyyy 'at' h:mm a")
+    )
+  }, [entry.createdAt])
 
   const handleSave = (content: string, mood?: string) => {
     onUpdate(content, mood)
@@ -88,7 +96,7 @@ export function EntryViewer({
       <div className="flex-1 overflow-auto">
         <div className="mb-4 flex items-center gap-3">
           <time className="text-sm text-muted-foreground">
-            {format(new Date(entry.createdAt), "EEEE, MMMM d, yyyy 'at' h:mm a")}
+            {mounted ? formattedDate : "Loading..."}
           </time>
           {entry.mood && <span className="text-xl">{entry.mood}</span>}
         </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect, useMemo } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { cn } from "@/lib/utils"
 import { format, isToday, isYesterday } from "date-fns"
@@ -22,6 +23,33 @@ function formatTime(dateString: string): string {
 }
 
 export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Memoize grouped entries to avoid recalculating on every render
+  const groupedEntries = useMemo(() => {
+    if (!mounted) return {}
+    return entries.reduce<Record<string, JournalEntry[]>>((acc, entry) => {
+      const dateKey = formatDate(entry.createdAt)
+      if (!acc[dateKey]) {
+        acc[dateKey] = []
+      }
+      acc[dateKey].push(entry)
+      return acc
+    }, {})
+  }, [entries, mounted])
+  // Show loading placeholder before mount to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center text-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
   if (entries.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center text-center">
@@ -33,19 +61,6 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
       </div>
     )
   }
-
-  // Group entries by date
-  const groupedEntries = entries.reduce<Record<string, JournalEntry[]>>(
-    (acc, entry) => {
-      const dateKey = formatDate(entry.createdAt)
-      if (!acc[dateKey]) {
-        acc[dateKey] = []
-      }
-      acc[dateKey].push(entry)
-      return acc
-    },
-    {}
-  )
 
   return (
     <div className="space-y-6">
