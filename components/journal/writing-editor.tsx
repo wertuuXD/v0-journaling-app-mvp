@@ -155,9 +155,9 @@ export function WritingEditor({
 
       {/* Mood image display */}
       {moodImage && mood && (
-        <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="relative overflow-hidden rounded-2xl border border-border/30 bg-card/50">
-            <div className="relative aspect-video w-full max-w-sm">
+        <div className="mt-4 flex justify-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="relative w-full overflow-hidden rounded-2xl border border-border/30 bg-card/50">
+            <div className="relative aspect-video w-full">
               <Image
                 src={moodImage}
                 alt={MOOD_LABELS[mood] || "Mood illustration"}
