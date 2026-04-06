@@ -33,7 +33,7 @@ const MOOD_LABELS: Record<string, string> = {
 interface WritingEditorProps {
   initialContent?: string
   initialMood?: string
-  showPrompts?: boolean
+  showPrompts?: boolean // Always shows by default
   onSave: (content: string, mood?: string) => void
   onAutoSave?: (content: string, mood?: string) => void
   autoFocus?: boolean
@@ -43,7 +43,7 @@ interface WritingEditorProps {
 export function WritingEditor({
   initialContent = "",
   initialMood,
-  showPrompts = false,
+  showPrompts = true,
   onSave,
   onAutoSave,
   autoFocus = true,

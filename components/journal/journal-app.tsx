@@ -6,7 +6,7 @@ import { WritingEditor } from "./writing-editor"
 import { Timeline } from "./timeline"
 import { EntryViewer } from "./entry-viewer"
 import { cn } from "@/lib/utils"
-import { BookOpen, PenLine, Sparkles, Lock } from "lucide-react"
+import { BookOpen, PenLine, Lock } from "lucide-react"
 
 type View = "write" | "timeline" | "entry"
 
@@ -15,7 +15,6 @@ export function JournalApp() {
     useJournal()
   const [currentView, setCurrentView] = useState<View>("write")
   const [selectedEntryId, setSelectedEntryId] = useState<string>()
-  const [showPrompts, setShowPrompts] = useState(false)
 
   const handleSaveNewEntry = useCallback(
     (content: string, mood?: string) => {
@@ -72,19 +71,6 @@ export function JournalApp() {
           Unwind
         </h1>
         <div className="flex items-center gap-1">
-          {/* Prompt toggle */}
-          <button
-            onClick={() => setShowPrompts(!showPrompts)}
-            className={cn(
-              "rounded-lg p-2 transition-colors",
-              showPrompts
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            )}
-            title={showPrompts ? "Hide prompts" : "Show prompts"}
-          >
-            <Sparkles className="h-5 w-5" />
-          </button>
           {/* Navigation */}
           <button
             onClick={() => setCurrentView("write")}
@@ -118,7 +104,6 @@ export function JournalApp() {
         {currentView === "write" && (
           <WritingEditor
             onSave={handleSaveNewEntry}
-            showPrompts={showPrompts}
             placeholder="What's on your mind?"
           />
         )}
