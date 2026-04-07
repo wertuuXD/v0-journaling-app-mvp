@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { format, isToday, isYesterday } from "date-fns"
 import { Search } from "lucide-react"
 import { SearchBar } from "./search-bar"
+import { TimelineSkeleton } from "@/components/ui/skeletons"
 
 interface TimelineProps {
   entries: JournalEntry[]
@@ -31,6 +32,11 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
 
   useEffect(() => {
     setMounted(true)
+    // Simulate loading for better perceived performance
+    const timer = setTimeout(() => {
+      setMounted(true)
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   const handleSearchResults = useCallback((results: JournalEntry[]) => {
@@ -56,7 +62,9 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
     }, {})
   }, [entriesToGroup, mounted])
 
-  if (!mounted) return null
+  if (!mounted) {
+    return <TimelineSkeleton />
+  }
 
   // Show no results message when search returns empty
   if (isSearching && entriesToGroup.length === 0) {
@@ -107,7 +115,7 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
 
       {Object.entries(groupedEntries).map(([date, dateEntries]) => (
         <div key={date} className="space-y-6">
-          <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-semibold px-2">
+          <h3 className="text-[11px] font-semibold text-muted-foreground/30 uppercase tracking-wider px-2">
             {date}
           </h3>
           <div className="flex flex-col gap-4">
@@ -116,20 +124,25 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
                 key={entry.id}
                 onClick={() => onSelect(entry)}
                 className={cn(
-                  "group relative w-full rounded-2xl p-6 text-left transition-all duration-300",
-                  "bg-card/50 hover:bg-card border border-border/20 hover:border-border/40 hover:shadow-xl hover:shadow-primary/5 active:scale-[0.99]",
-                  selectedId === entry.id && "ring-2 ring-primary/20 bg-card"
+                  "group relative w-full rounded-2xl p-6 text-left transition-all duration-500 transform",
+                  "bg-card/50 hover:bg-card border border-border/20 hover:border-border/40 hover:shadow-2xl hover:shadow-primary/10 active:scale-[0.98] hover:scale-[1.02]",
+                  selectedId === entry.id && "ring-2 ring-primary/20 bg-card scale-[1.01]"
                 )}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-[10px] font-medium text-muted-foreground/50">
+                <div className="flex items-start justify-between mb-4">
+                  <span className="text-[11px] font-semibold text-muted-foreground/40 uppercase tracking-wider">
                     {formatTime(entry.createdAt)}
                   </span>
-                  {entry.mood && <span className="text-xl group-hover:scale-110 transition-transform">{entry.mood}</span>}
+                  {entry.mood && (
+                    <span className="text-xl group-hover:scale-125 group-hover:rotate-12 transition-all duration-300 inline-block">
+                      {entry.mood}
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm leading-relaxed text-foreground/80 line-clamp-3">
+                <p className="text-sm leading-relaxed text-foreground/85 line-clamp-3 font-normal group-hover:text-foreground/95 transition-colors">
                   {entry.content}
                 </p>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </button>
             ))}
           </div>

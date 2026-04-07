@@ -113,7 +113,7 @@ export function WritingEditor({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={cn(
-            "h-full w-full resize-none bg-transparent text-xl leading-relaxed text-foreground placeholder:text-muted-foreground/40 focus:outline-none md:text-2xl transition-colors duration-500",
+            "h-full w-full resize-none bg-transparent text-xl leading-relaxed text-foreground placeholder:text-muted-foreground/40 focus:outline-none md:text-2xl transition-colors duration-500 font-normal",
             "scrollbar-none"
           )}
           style={{ 
@@ -127,7 +127,7 @@ export function WritingEditor({
       <div className="flex flex-col gap-10 pb-8">
         {/* Minimal Mood Selector */}
         <div className="flex items-center justify-between px-2">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/40 font-semibold">Mood</span>
+          <span className="text-[11px] font-semibold text-muted-foreground/40 uppercase tracking-wider">Mood</span>
           <div className="flex items-center gap-4">
             {MOODS.map((emoji) => (
               <button
@@ -137,10 +137,10 @@ export function WritingEditor({
                 aria-label={`${MOOD_LABELS[emoji]} mood`}
                 data-mood-button
                 className={cn(
-                  "text-2xl transition-all duration-300",
+                  "text-2xl transition-all duration-300 transform",
                   mood === emoji
-                    ? "scale-125 brightness-110"
-                    : "opacity-30 grayscale hover:opacity-100 hover:grayscale-0"
+                    ? "scale-125 brightness-110 animate-pulse"
+                    : "opacity-30 grayscale hover:opacity-100 hover:grayscale-0 hover:scale-110 hover:rotate-6 hover:drop-shadow-lg"
                 )}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -164,7 +164,7 @@ export function WritingEditor({
                   }
                 }}
               >
-                {emoji}
+                <span className="inline-block transition-transform duration-200 hover:animate-bounce">{emoji}</span>
               </button>
             ))}
           </div>
@@ -176,9 +176,9 @@ export function WritingEditor({
           disabled={!content.trim()}
           data-save-button
           className={cn(
-            "w-full rounded-2xl bg-primary py-5 text-sm font-semibold text-primary-foreground transition-all duration-300 shadow-xl shadow-primary/10",
+            "w-full rounded-2xl bg-primary py-5 text-sm font-semibold text-primary-foreground transition-all duration-300 shadow-xl shadow-primary/10 transform",
             content.trim()
-              ? "active:scale-[0.98] hover:opacity-90"
+              ? "active:scale-[0.98] hover:scale-[1.02] hover:opacity-90 hover:shadow-2xl hover:shadow-primary/20"
               : "opacity-10 cursor-not-allowed"
           )}
           title="Save entry (Ctrl+Enter)"
@@ -198,7 +198,12 @@ export function WritingEditor({
             }
           }}
         >
-          Save Entry
+          <span className="flex items-center justify-center gap-2">
+            Save Entry
+            {content.trim() && (
+              <span className="w-2 h-2 bg-white/30 rounded-full animate-pulse" />
+            )}
+          </span>
         </button>
       </div>
     </div>

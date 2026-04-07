@@ -151,7 +151,7 @@ export function JournalApp() {
       <header className="mx-auto w-full max-w-2xl px-6 py-8 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UnwindLogo />
-          <h1 className="text-xl font-medium tracking-tight text-foreground/90">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground/95">
             Unwind
           </h1>
         </div>
@@ -159,44 +159,44 @@ export function JournalApp() {
           <button
             onClick={() => setCurrentView("write")}
             className={cn(
-              "rounded-full p-2.5 transition-all duration-200",
+              "rounded-full p-2.5 transition-all duration-300 transform",
               currentView === "write"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground hover:scale-110 hover:shadow-md"
             )}
             title="New entry (N on mobile, Alt+N on desktop)"
             aria-label="New entry (N on mobile, Alt+N on desktop)"
             aria-keyshortcuts="N; Alt+N"
           >
-            <PenLine className="h-5 w-5" />
+            <PenLine className="h-5 w-5 transition-transform duration-200" />
           </button>
           <button
             onClick={() => setCurrentView("timeline")}
             className={cn(
-              "rounded-full p-2.5 transition-all duration-200",
+              "rounded-full p-2.5 transition-all duration-300 transform",
               currentView === "timeline" || currentView === "entry"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground hover:scale-110 hover:shadow-md"
             )}
             title="Timeline (T on mobile, Alt+T on desktop)"
             aria-label="Timeline (T on mobile, Alt+T on desktop)"
             aria-keyshortcuts="T; Alt+T"
           >
-            <BookOpen className="h-5 w-5" />
+            <BookOpen className="h-5 w-5 transition-transform duration-200" />
           </button>
           <button
             onClick={() => setCurrentView("data")}
             className={cn(
-              "rounded-full p-2.5 transition-all duration-200",
+              "rounded-full p-2.5 transition-all duration-300 transform",
               currentView === "data"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground hover:scale-110 hover:shadow-md"
             )}
             title="Settings (S on mobile, Alt+S on desktop)"
             aria-label="Settings (S on mobile, Alt+S on desktop)"
             aria-keyshortcuts="S; Alt+S"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-5 w-5 transition-transform duration-200" />
           </button>
           <div className="ml-1 h-6 w-[1px] bg-border/20 mx-1" />
           <ThemeToggle />
@@ -206,63 +206,73 @@ export function JournalApp() {
       {/* Main content centered with max width and mobile padding */}
       <main className="mx-auto w-full max-w-2xl flex-1 flex flex-col px-6 pb-20">
         <div className="flex-1 flex flex-col gap-8">
-          {currentView === "write" && (
-            <ErrorBoundary fallback={
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground">Writing editor temporarily unavailable. Please refresh.</p>
+          <div className="relative">
+            {currentView === "write" && (
+              <div className="animate-in fade-in slide-in-from-right-4 duration-500 absolute inset-0">
+                <ErrorBoundary fallback={
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-muted-foreground">Writing editor temporarily unavailable. Please refresh.</p>
+                  </div>
+                }>
+                  <WritingEditor
+                    onSave={handleSaveNewEntry}
+                    placeholder="What's on your mind?"
+                  />
+                </ErrorBoundary>
               </div>
-            }>
-              <WritingEditor
-                onSave={handleSaveNewEntry}
-                placeholder="What's on your mind?"
-              />
-            </ErrorBoundary>
-          )}
+            )}
 
-          {currentView === "timeline" && (
-            <ErrorBoundary fallback={
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground">Timeline temporarily unavailable. Please refresh.</p>
+            {currentView === "timeline" && (
+              <div className="animate-in fade-in slide-in-from-left-4 duration-500 absolute inset-0">
+                <ErrorBoundary fallback={
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-muted-foreground">Timeline temporarily unavailable. Please refresh.</p>
+                  </div>
+                }>
+                  <Timeline
+                    entries={entries}
+                    selectedId={selectedEntryId}
+                    onSelect={handleSelectEntry}
+                  />
+                </ErrorBoundary>
               </div>
-            }>
-              <Timeline
-                entries={entries}
-                selectedId={selectedEntryId}
-                onSelect={handleSelectEntry}
-              />
-            </ErrorBoundary>
-          )}
+            )}
 
-          {currentView === "entry" && selectedEntry && (
-            <ErrorBoundary fallback={
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground">Entry viewer temporarily unavailable. Please refresh.</p>
+            {currentView === "entry" && selectedEntry && (
+              <div className="animate-in fade-in zoom-in-95 duration-500 absolute inset-0">
+                <ErrorBoundary fallback={
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-muted-foreground">Entry viewer temporarily unavailable. Please refresh.</p>
+                  </div>
+                }>
+                  <EntryViewer
+                    entry={selectedEntry}
+                    onUpdate={handleUpdateEntry}
+                    onDelete={handleDeleteEntry}
+                    onBack={() => {
+                      setSelectedEntryId(undefined)
+                      setCurrentView("timeline")
+                    }}
+                  />
+                </ErrorBoundary>
               </div>
-            }>
-              <EntryViewer
-                entry={selectedEntry}
-                onUpdate={handleUpdateEntry}
-                onDelete={handleDeleteEntry}
-                onBack={() => {
-                  setSelectedEntryId(undefined)
-                  setCurrentView("timeline")
-                }}
-              />
-            </ErrorBoundary>
-          )}
+            )}
 
-          {currentView === "data" && (
-            <ErrorBoundary fallback={
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground">Settings temporarily unavailable. Please refresh.</p>
+            {currentView === "data" && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 absolute inset-0">
+                <ErrorBoundary fallback={
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-muted-foreground">Settings temporarily unavailable. Please refresh.</p>
+                  </div>
+                }>
+                  <DataManager
+                    entries={entries}
+                    onImport={handleImport}
+                  />
+                </ErrorBoundary>
               </div>
-            }>
-              <DataManager
-                entries={entries}
-                onImport={handleImport}
-              />
-            </ErrorBoundary>
-          )}
+            )}
+          </div>
         </div>
       </main>
 
