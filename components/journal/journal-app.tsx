@@ -2,28 +2,25 @@
 
 import { useState, useCallback } from "react"
 import { useJournal, type JournalEntry } from "@/hooks/use-journal"
-import { useSupabaseSync } from "@/hooks/use-supabase-sync"
 import { WritingEditor } from "./writing-editor"
 import { Timeline } from "./timeline"
 import { EntryViewer } from "./entry-viewer"
 import { DataManager } from "./data-manager"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
-import { BookOpen, PenLine, Lock, Settings } from "lucide-react"
+import { BookOpen, PenLine, Settings, Lock } from "lucide-react"
 
 type View = "write" | "timeline" | "entry" | "data"
 
 export function JournalApp() {
   const { entries, isLoaded, createEntry, updateEntry, deleteEntry, getEntry, importEntries } =
     useJournal()
-  // const sync = useSupabaseSync()
   const [currentView, setCurrentView] = useState<View>("write")
   const [selectedEntryId, setSelectedEntryId] = useState<string>()
 
   const handleSaveNewEntry = useCallback(
     (content: string, mood?: string) => {
       createEntry(content, mood)
-      // Reset to write view with fresh state
       setCurrentView("timeline")
     },
     [createEntry]
@@ -51,11 +48,6 @@ export function JournalApp() {
     }
   }, [selectedEntryId, deleteEntry])
 
-  const handleBackToWrite = useCallback(() => {
-    setSelectedEntryId(undefined)
-    setCurrentView("write")
-  }, [])
-
   const handleImport = useCallback((importedEntries: JournalEntry[]) => {
     importEntries(importedEntries)
     setCurrentView("timeline")
@@ -63,31 +55,29 @@ export function JournalApp() {
 
   const selectedEntry = selectedEntryId ? getEntry(selectedEntryId) : undefined
 
-  // Loading state
   if (!isLoaded) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     )
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-background animate-in fade-in duration-700">
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-border/30 px-4 py-4 md:px-8">
-        <h1 className="font-serif text-xl tracking-tight text-foreground">
+      {/* Centered header */}
+      <header className="mx-auto w-full max-w-2xl px-6 py-8 flex items-center justify-between">
+        <h1 className="text-xl font-medium tracking-tight text-foreground/90">
           Unwind
         </h1>
-        <div className="flex items-center gap-1">
-          {/* Navigation */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentView("write")}
             className={cn(
-              "rounded-lg p-2 transition-colors",
+              "rounded-full p-2.5 transition-all duration-200",
               currentView === "write"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
             title="New entry"
           >
@@ -96,73 +86,74 @@ export function JournalApp() {
           <button
             onClick={() => setCurrentView("timeline")}
             className={cn(
-              "rounded-lg p-2 transition-colors",
+              "rounded-full p-2.5 transition-all duration-200",
               currentView === "timeline" || currentView === "entry"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
-            title="Past entries"
+            title="Timeline"
           >
             <BookOpen className="h-5 w-5" />
           </button>
           <button
             onClick={() => setCurrentView("data")}
             className={cn(
-              "rounded-lg p-2 transition-colors",
+              "rounded-full p-2.5 transition-all duration-200",
               currentView === "data"
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
-            title="Data management"
+            title="Settings"
           >
             <Settings className="h-5 w-5" />
           </button>
-          <ThemeToggle />
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8 md:px-8">
-        {currentView === "write" && (
-          <WritingEditor
-            onSave={handleSaveNewEntry}
-            placeholder="What's on your mind?"
-          />
-        )}
+      {/* Main content centered with max width and mobile padding */}
+      <main className="mx-auto w-full max-w-2xl flex-1 flex flex-col px-6 pb-20">
+        <div className="flex-1 flex flex-col gap-8">
+          {currentView === "write" && (
+            <WritingEditor
+              onSave={handleSaveNewEntry}
+              placeholder="What's on your mind?"
+            />
+          )}
 
-        {currentView === "timeline" && (
-          <Timeline
-            entries={entries}
-            selectedId={selectedEntryId}
-            onSelect={handleSelectEntry}
-          />
-        )}
+          {currentView === "timeline" && (
+            <Timeline
+              entries={entries}
+              selectedId={selectedEntryId}
+              onSelect={handleSelectEntry}
+            />
+          )}
 
-        {currentView === "entry" && selectedEntry && (
-          <EntryViewer
-            entry={selectedEntry}
-            onUpdate={handleUpdateEntry}
-            onDelete={handleDeleteEntry}
-            onBack={() => {
-              setSelectedEntryId(undefined)
-              setCurrentView("timeline")
-            }}
-          />
-        )}
+          {currentView === "entry" && selectedEntry && (
+            <EntryViewer
+              entry={selectedEntry}
+              onUpdate={handleUpdateEntry}
+              onDelete={handleDeleteEntry}
+              onBack={() => {
+                setSelectedEntryId(undefined)
+                setCurrentView("timeline")
+              }}
+            />
+          )}
 
-        {currentView === "data" && (
-          <DataManager 
-            entries={entries}
-            onImport={handleImport}
-          />
-        )}
+          {currentView === "data" && (
+            <DataManager
+              entries={entries}
+              onImport={handleImport}
+            />
+          )}
+        </div>
       </main>
 
-      {/* Footer - Privacy notice */}
-      <footer className="border-t border-border/20 px-4 py-4 md:px-8">
-        <div className="mx-auto flex max-w-2xl items-center justify-center gap-2 text-xs text-muted-foreground/60">
-          <Lock className="h-3 w-3" />
-          <span>Your entries stay on this device. Private by default.</span>
+      {/* Subtle footer */}
+      <footer className="mx-auto w-full max-w-2xl px-6 py-6 border-t border-border/10">
+        <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground/40">
+          <Lock className="h-2.5 w-2.5" />
+          <span>Local & Private</span>
         </div>
       </footer>
     </div>

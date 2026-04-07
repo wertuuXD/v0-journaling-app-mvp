@@ -13,29 +13,16 @@ interface SearchBarProps {
 
 export function SearchBar({ entries, onResults, onClear }: SearchBarProps) {
   const [query, setQuery] = useState("")
-  const [isActive, setIsActive] = useState(false)
 
   const handleClear = useCallback(() => {
     setQuery("")
-    setIsActive(false)
-    onResults([])
-  }, [onResults])
-
-  const filteredEntries = useMemo(() => {
-    if (!query.trim()) return []
-    
-    const searchTerm = query.toLowerCase()
-    return entries.filter(entry => 
-      entry.content.toLowerCase().includes(searchTerm) ||
-      (entry.mood && entry.mood.toLowerCase().includes(searchTerm))
-    )
-  }, [entries, query])
+    onClear()
+  }, [onClear])
 
   const handleQueryChange = useCallback((newQuery: string) => {
     setQuery(newQuery)
-    // Calculate filtered entries inline to avoid circular dependency
     if (!newQuery.trim()) {
-      onResults([])
+      onClear()
     } else {
       const searchTerm = newQuery.toLowerCase()
       const filtered = entries.filter(entry => 
@@ -44,46 +31,31 @@ export function SearchBar({ entries, onResults, onClear }: SearchBarProps) {
       )
       onResults(filtered)
     }
-  }, [entries, onResults])
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setQuery("")
-        setIsActive(false)
-        onResults([])
-      }
-    }
-  , [onResults])
+  }, [entries, onResults, onClear])
 
   return (
-    <div className="space-y-3">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <div className="space-y-4">
+      <div className="group relative">
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/30 transition-colors group-focus-within:text-primary" />
         <input
           type="text"
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
-          onFocus={() => setIsActive(true)}
-          onBlur={() => setIsActive(false)}
-          onKeyDown={handleKeyDown}
-          placeholder="Search entries..."
-          className="w-full h-12 rounded-lg border border-border/30 bg-card/50 pl-10 pr-10 py-2 text-sm placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          autoFocus
+          placeholder="Search your thoughts..."
+          className={cn(
+            "w-full h-14 rounded-2xl border border-border/10 bg-secondary/20 pl-11 pr-11 text-sm transition-all duration-300",
+            "placeholder:text-muted-foreground/30 focus:bg-secondary/40 focus:border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/5"
+          )}
         />
-        <button
-          onClick={handleClear}
-          className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <X className="h-3 w-3" />
-        </button>
+        {query && (
+          <button
+            onClick={handleClear}
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
       </div>
-      
-      {query && (
-        <div className="text-xs text-muted-foreground animate-in fade-in duration-200">
-          {filteredEntries.length} {filteredEntries.length === 1 ? "result" : "results"} found
-        </div>
-      )}
     </div>
   )
 }

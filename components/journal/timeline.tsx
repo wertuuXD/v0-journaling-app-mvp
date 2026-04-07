@@ -42,7 +42,6 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
     setIsSearching(false)
   }, [])
 
-  // Memoize grouped entries to avoid recalculating on every render
   const groupedEntries = useMemo(() => {
     if (!mounted) return {}
     const entriesToGroup = isSearching ? searchResults : entries
@@ -55,95 +54,50 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
       return acc
     }, {})
   }, [entries, searchResults, isSearching, mounted])
-  // Show loading placeholder before mount to avoid hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center text-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    )
-  }
+
+  if (!mounted) return null
 
   if (entries.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-center">
-        <div className="mb-4 text-4xl opacity-30">📝</div>
-        <p className="text-muted-foreground">No entries yet</p>
-        <p className="mt-1 text-sm text-muted-foreground/70">
-          Start writing to create your first entry
-        </p>
-      </div>
-    )
-  }
-
-  if (isSearching && searchResults.length === 0) {
-    return (
-      <div className="space-y-6">
-        <SearchBar 
-          entries={entries}
-          onResults={handleSearchResults}
-          onClear={handleClearSearch}
-        />
-        <div className="flex h-full flex-col items-center justify-center text-center">
-          <div className="mb-4 text-4xl opacity-30">🔍</div>
-          <p className="text-muted-foreground">No results found</p>
-          <p className="mt-1 text-sm text-muted-foreground/70">
-            Try different keywords
-          </p>
-        </div>
+      <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-700">
+        <p className="text-muted-foreground/40 text-sm italic">Silence is a valid entry...</p>
+        <p className="mt-2 text-xs text-muted-foreground/30">Start writing when you're ready.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 min-h-0 pb-8">
-      {/* Search Bar */}
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <SearchBar 
         entries={entries}
         onResults={handleSearchResults}
         onClear={handleClearSearch}
       />
-      
-      {/* Search Results Header */}
-      {isSearching && (
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Search Results
-          </h3>
-          <button
-            onClick={handleClearSearch}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            Clear search
-          </button>
-        </div>
-      )}
 
-      {/* Entries */}
       {Object.entries(groupedEntries).map(([date, dateEntries]) => (
-        <div key={date}>
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div key={date} className="space-y-6">
+          <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-semibold px-2">
             {date}
           </h3>
-          <div className="space-y-2">
+          <div className="flex flex-col gap-4">
             {dateEntries.map((entry) => (
               <button
                 key={entry.id}
                 onClick={() => onSelect(entry)}
                 className={cn(
-                  "w-full rounded-lg border p-4 text-left transition-all",
-                  selectedId === entry.id
-                    ? "border-primary/50 bg-primary/10"
-                    : "border-border/30 bg-card/50 hover:border-border hover:bg-card"
+                  "group relative w-full rounded-2xl p-6 text-left transition-all duration-300",
+                  "bg-secondary/20 hover:bg-secondary/40 border border-border/10 hover:border-border/30",
+                  "hover:shadow-lg active:scale-[0.99]",
+                  selectedId === entry.id && "ring-1 ring-primary/40 bg-secondary/50"
                 )}
               >
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-[10px] font-medium text-muted-foreground/50">
                     {formatTime(entry.createdAt)}
                   </span>
-                  {entry.mood && <span className="text-lg">{entry.mood}</span>}
+                  {entry.mood && <span className="text-xl group-hover:scale-110 transition-transform">{entry.mood}</span>}
                 </div>
-                <p className="text-sm text-foreground/80 whitespace-pre-wrap break-words">
+                <p className="text-sm leading-relaxed text-foreground/70 line-clamp-3">
                   {entry.content}
                 </p>
               </button>
