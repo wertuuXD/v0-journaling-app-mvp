@@ -7,6 +7,16 @@ import { FileText, FileDown } from "lucide-react"
 import { format } from "date-fns"
 import { DateRange } from "react-day-picker"
 
+const MOOD_LABELS: Record<string, string> = {
+  "😌": "Calm",
+  "😊": "Happy",
+  "😔": "Down",
+  "😤": "Frustrated",
+  "😴": "Tired",
+  "🤔": "Reflective",
+  "😰": "Anxious"
+}
+
 interface ExportActionsProps {
   entries: JournalEntry[]
   dateRange: DateRange | undefined
@@ -85,11 +95,19 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         y += 5
       }
 
+      const pageHeight = doc.internal.pageSize.getHeight()
+      const bottom = pageHeight - margin
+
       // Entries
       entries.forEach((entry, index) => {
         const entryDate = new Date(entry.createdAt)
         if (Number.isNaN(entryDate.getTime())) return
 
+        // Space needed for Header (Date + Time)
+        const headerHeight = 15
+        if (y + headerHeight > bottom) {
+          doc.addPage()
+          y = margin
         // Check if we need a new page
         if (y > 270) {
           doc.addPage()
@@ -112,6 +130,14 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         y += 7
 
         if (entry.mood) {
+          if (y + 7 > bottom) {
+            doc.addPage()
+            y = margin
+          }
+          doc.setFontSize(10)
+          doc.setTextColor(124, 92, 255)
+          const moodLabel = MOOD_LABELS[entry.mood] || entry.mood
+          doc.text(`Mood: ${moodLabel}`, margin, y)
           doc.setFontSize(10)
           doc.setTextColor(124, 92, 255)
           doc.text(`Mood: ${entry.mood}`, margin, y)
@@ -123,6 +149,25 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         doc.setFont("helvetica", "normal")
 
         const lines = doc.splitTextToSize(entry.content, contentWidth)
+        const lineHeight = 6
+
+        lines.forEach((line: string) => {
+          if (y + lineHeight > bottom) {
+            doc.addPage()
+            y = margin
+          }
+          doc.text(line, margin, y)
+          y += lineHeight
+        })
+
+        y += 10 // Extra spacing after entry
+
+        // Separator between entries
+        if (index < entries.length - 1) {
+          if (y + 5 <= bottom) {
+            doc.setDrawColor(240, 240, 240)
+            doc.line(margin, y - 5, pageWidth - margin, y - 5)
+          }
         doc.text(lines, margin, y)
 
         y += (lines.length * 6) + 15
