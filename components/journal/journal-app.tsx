@@ -9,6 +9,7 @@ import { DataManager } from "./data-manager"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 import { BookOpen, PenLine, Settings, Lock } from "lucide-react"
+import { UnwindLogo } from "./unwind-logo"
 
 type View = "write" | "timeline" | "entry" | "data"
 
@@ -67,9 +68,12 @@ export function JournalApp() {
     <div className="flex min-h-screen flex-col bg-background animate-in fade-in duration-700">
       {/* Centered header */}
       <header className="mx-auto w-full max-w-2xl px-6 py-8 flex items-center justify-between">
-        <h1 className="text-xl font-medium tracking-tight text-foreground/90">
-          Unwind
-        </h1>
+        <div className="flex items-center gap-2">
+          <UnwindLogo />
+          <h1 className="text-xl font-medium tracking-tight text-foreground/90">
+            Unwind
+          </h1>
+        </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setCurrentView("write")}
