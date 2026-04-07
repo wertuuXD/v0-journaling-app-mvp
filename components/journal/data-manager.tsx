@@ -40,6 +40,7 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
 
     return entries.filter((entry) => {
       const date = new Date(entry.createdAt)
+      if (Number.isNaN(date.getTime())) return false
       return isWithinInterval(date, { start, end })
     })
   }, [entries, dateRange])
@@ -77,7 +78,11 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
         }
 
         const validEntries = importedEntries.filter(entry => 
-          entry.id && entry.content && entry.createdAt
+          entry &&
+          typeof entry.id === 'string' &&
+          typeof entry.content === 'string' &&
+          typeof entry.createdAt === 'string' &&
+          !Number.isNaN(Date.parse(entry.createdAt))
         )
 
         onImport(validEntries)

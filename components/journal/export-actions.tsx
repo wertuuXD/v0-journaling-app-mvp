@@ -23,8 +23,11 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
       text += "=".repeat(30) + "\n\n"
 
       entries.forEach((entry) => {
-        const date = format(new Date(entry.createdAt), "PPPP")
-        const time = format(new Date(entry.createdAt), "p")
+        const entryDate = new Date(entry.createdAt)
+        if (Number.isNaN(entryDate.getTime())) return
+
+        const date = format(entryDate, "PPPP")
+        const time = format(entryDate, "p")
         text += `${date} at ${time}\n`
         if (entry.mood) text += `Mood: ${entry.mood}\n`
         text += "-".repeat(10) + "\n"
@@ -84,14 +87,17 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
 
       // Entries
       entries.forEach((entry, index) => {
+        const entryDate = new Date(entry.createdAt)
+        if (Number.isNaN(entryDate.getTime())) return
+
         // Check if we need a new page
         if (y > 270) {
           doc.addPage()
           y = 20
         }
 
-        const dateStr = format(new Date(entry.createdAt), "PPPP")
-        const timeStr = format(new Date(entry.createdAt), "p")
+        const dateStr = format(entryDate, "PPPP")
+        const timeStr = format(entryDate, "p")
 
         doc.setFontSize(12)
         doc.setTextColor(60, 60, 60)
