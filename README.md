@@ -2,6 +2,11 @@
 
 A beautiful, privacy-focused journaling application built with [Next.js](https://nextjs.org) and [v0](https://v0.app).
 
+## 🌸 **Live App**
+**Start journaling now:** [https://v0-journaling-app-mvp.vercel.app](https://v0-journaling-app-mvp.vercel.app)
+
+*Perfect for mobile and desktop - no signup required!*
+
 ## ✨ Features
 
 ### Core Journaling
