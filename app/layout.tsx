@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Crimson_Pro } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
@@ -55,6 +56,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <Toaster />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

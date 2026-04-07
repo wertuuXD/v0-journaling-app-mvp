@@ -21,8 +21,11 @@ export function JournalApp() {
 
   const handleSaveNewEntry = useCallback(
     (content: string, mood?: string) => {
-      createEntry(content, mood)
-      setCurrentView("timeline")
+      const newEntry = createEntry(content, mood)
+      if (newEntry) {
+        setCurrentView("timeline")
+      }
+      // If newEntry is null, the error toast is already shown by useJournal hook
     },
     [createEntry]
   )

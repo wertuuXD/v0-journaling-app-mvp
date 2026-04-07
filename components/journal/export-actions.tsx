@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { FileText, FileDown } from "lucide-react"
 import { format } from "date-fns"
 import { DateRange } from "react-day-picker"
+import { toast } from "sonner"
 
 interface ExportActionsProps {
   entries: JournalEntry[]
@@ -16,9 +17,33 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
   const handleExportText = useCallback(() => {
     try {
       let text = "UNWIND JOURNAL EXPORT\n"
-      text += `Generated on: ${format(new Date(), "PPP")}\n`
+      
+      // Format current date as ordinal format
+      const today = new Date()
+      const currentDay = today.getDate()
+      const currentMonth = today.toLocaleDateString('en-US', { month: 'long' })
+      const currentYear = today.getFullYear()
+      const getOrdinalSuffix = (n: number) => {
+        const s = ["th", "st", "nd", "rd"]
+        const v = n % 100
+        return s[(v - 20) % 10] || s[v] || s[0]
+      }
+      text += `Generated on: ${currentDay}${getOrdinalSuffix(currentDay)} ${currentMonth}, ${currentYear}\n`
+      
       if (dateRange?.from) {
-        text += `Range: ${format(dateRange.from, "PP")} - ${dateRange.to ? format(dateRange.to, "PP") : format(dateRange.from, "PP")}\n`
+        // Format date range as ordinal format
+        const formatDateOrdinal = (date: Date) => {
+          const day = date.getDate()
+          const month = date.toLocaleDateString('en-US', { month: 'long' })
+          const year = date.getFullYear()
+          const getOrdinalSuffix = (n: number) => {
+            const s = ["th", "st", "nd", "rd"]
+            const v = n % 100
+            return s[(v - 20) % 10] || s[v] || s[0]
+          }
+          return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
+        }
+        text += `Range: ${formatDateOrdinal(dateRange.from)} - ${dateRange.to ? formatDateOrdinal(dateRange.to) : formatDateOrdinal(dateRange.from)}\n`
       }
       text += "=".repeat(30) + "\n\n"
 
@@ -26,10 +51,35 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         const entryDate = new Date(entry.createdAt)
         if (Number.isNaN(entryDate.getTime())) return
 
-        const date = format(entryDate, "PPPP")
+        // Format date as ordinal format (e.g., "8th April, 2026")
+        const day = entryDate.getDate()
+        const month = entryDate.toLocaleDateString('en-US', { month: 'long' })
+        const year = entryDate.getFullYear()
+        
+        // Add ordinal suffix to day
+        const getOrdinalSuffix = (n: number) => {
+          const s = ["th", "st", "nd", "rd"]
+          const v = n % 100
+          return s[(v - 20) % 10] || s[v] || s[0]
+        }
+        const date = `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
         const time = format(entryDate, "p")
+        
         text += `${date} at ${time}\n`
-        if (entry.mood) text += `Mood: ${entry.mood}\n`
+        if (entry.mood) {
+          // Map emoji to text for consistency with PDF
+          const moodText: Record<string, string> = {
+            "😊": "Happy",
+            "😌": "Calm", 
+            "😔": "Down",
+            "😤": "Frustrated",
+            "😴": "Tired",
+            "🤔": "Reflective",
+            "😰": "Anxious"
+          }
+          const moodLabel = moodText[entry.mood] || entry.mood
+          text += `Mood: ${moodLabel}\n`
+        }
         text += "-".repeat(10) + "\n"
         text += `${entry.content}\n\n`
         text += "=".repeat(20) + "\n\n"
@@ -44,8 +94,10 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
+      toast.success(`Text export completed! ${entries.length} entries exported`)
     } catch (error) {
       console.error("Failed to export Text:", error)
+      toast.error("Failed to export text file. Please try again.")
     }
   }, [entries, dateRange])
 
@@ -58,27 +110,52 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
       const contentWidth = pageWidth - 2 * margin
       let y = 20
 
-      // Branding
-      doc.setFontSize(22)
+      // Enhanced Branding Header
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(32)
       doc.setTextColor(124, 92, 255) // #7C5CFF
       doc.text("Unwind", margin, y)
-
-      doc.setFontSize(10)
-      doc.setTextColor(150, 150, 150)
-      doc.text("No-Pressure Journaling", margin + 28, y)
-
-      y += 10
-      doc.setDrawColor(232, 226, 216)
+      
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(14)
+      doc.setTextColor(147, 128, 255) // Lighter purple for subtitle
+      doc.text("No-Pressure Journaling", margin, y + 8)
+      
+      y += 18
+      doc.setDrawColor(124, 92, 255)
+      doc.setLineWidth(0.5)
       doc.line(margin, y, pageWidth - margin, y)
       y += 15
 
       // Header Info
       doc.setFontSize(10)
       doc.setTextColor(100, 100, 100)
-      doc.text(`Exported on ${format(new Date(), "PPP")}`, margin, y)
+      // Format current date as ordinal format
+      const today = new Date()
+      const currentDay = today.getDate()
+      const currentMonth = today.toLocaleDateString('en-US', { month: 'long' })
+      const currentYear = today.getFullYear()
+      const getOrdinalSuffix = (n: number) => {
+        const s = ["th", "st", "nd", "rd"]
+        const v = n % 100
+        return s[(v - 20) % 10] || s[v] || s[0]
+      }
+      doc.text(`Exported on ${currentDay}${getOrdinalSuffix(currentDay)} ${currentMonth}, ${currentYear}`, margin, y)
       y += 7
       if (dateRange?.from) {
-        const rangeText = `${format(dateRange.from, "PP")} - ${dateRange.to ? format(dateRange.to, "PP") : format(dateRange.from, "PP")}`
+        // Format date range as ordinal format
+        const formatDateOrdinal = (date: Date) => {
+          const day = date.getDate()
+          const month = date.toLocaleDateString('en-US', { month: 'long' })
+          const year = date.getFullYear()
+          const getOrdinalSuffix = (n: number) => {
+            const s = ["th", "st", "nd", "rd"]
+            const v = n % 100
+            return s[(v - 20) % 10] || s[v] || s[0]
+          }
+          return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
+        }
+        const rangeText = `${formatDateOrdinal(dateRange.from)} - ${dateRange.to ? formatDateOrdinal(dateRange.to) : formatDateOrdinal(dateRange.from)}`
         doc.text(`Range: ${rangeText}`, margin, y)
         y += 10
       } else {
@@ -96,7 +173,18 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
           y = 20
         }
 
-        const dateStr = format(entryDate, "PPPP")
+        // Format date as ordinal format (e.g., "8th April, 2026")
+        const day = entryDate.getDate()
+        const month = entryDate.toLocaleDateString('en-US', { month: 'long' })
+        const year = entryDate.getFullYear()
+        
+        // Add ordinal suffix to day
+        const getOrdinalSuffix = (n: number) => {
+          const s = ["th", "st", "nd", "rd"]
+          const v = n % 100
+          return s[(v - 20) % 10] || s[v] || s[0]
+        }
+        const dateStr = `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
         const timeStr = format(entryDate, "p")
 
         doc.setFontSize(12)
@@ -114,7 +202,18 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         if (entry.mood) {
           doc.setFontSize(10)
           doc.setTextColor(124, 92, 255)
-          doc.text(`Mood: ${entry.mood}`, margin, y)
+          // Map emoji to text for PDF compatibility
+          const moodText: Record<string, string> = {
+            "😊": "Happy",
+            "😌": "Calm", 
+            "😔": "Down",
+            "😤": "Frustrated",
+            "😴": "Tired",
+            "🤔": "Reflective",
+            "😰": "Anxious"
+          }
+          const moodLabel = moodText[entry.mood] || entry.mood
+          doc.text(`Mood: ${moodLabel}`, margin, y)
           y += 7
         }
 
@@ -135,8 +234,10 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
       })
 
       doc.save(`unwind-export-${new Date().toISOString().split("T")[0]}.pdf`)
+      toast.success(`PDF export completed! ${entries.length} entries exported`)
     } catch (error) {
       console.error("Failed to export PDF:", error)
+      toast.error("Failed to export PDF. Please try again.")
     }
   }, [entries, dateRange])
 

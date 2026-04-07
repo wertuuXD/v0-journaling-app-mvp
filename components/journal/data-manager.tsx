@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button"
 import { DateRange } from "react-day-picker"
 import dynamic from "next/dynamic"
+import { toast } from "sonner"
 
 // Use next/dynamic with ssr: false for components that use libraries incompatible with SSR/Turbopack Node.js environments
 const ExportActions = dynamic(() => import("./export-actions"), {
@@ -58,8 +59,10 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
+      toast.success(`JSON backup completed! ${filteredEntries.length} entries exported`)
     } catch (error) {
       console.error("Failed to export JSON:", error)
+      toast.error("Failed to export JSON backup. Please try again.")
     }
   }, [filteredEntries])
 
@@ -86,8 +89,10 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
         )
 
         onImport(validEntries)
+        toast.success(`Import completed! ${validEntries.length} entries imported`)
       } catch (error) {
         console.error("Failed to import:", error)
+        toast.error("Failed to import file. Please check the file format and try again.")
       }
     }
     reader.readAsText(file)

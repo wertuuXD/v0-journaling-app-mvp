@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { toast } from "sonner"
 
 export interface JournalEntry {
   id: string
@@ -46,14 +47,35 @@ export function useJournal() {
   useEffect(() => {
     if (isLoaded) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+        const dataStr = JSON.stringify(entries)
+        
+        // Check if we're approaching localStorage quota
+        const storageSize = new Blob([dataStr]).size
+        const quotaLimit = 5 * 1024 * 1024 // 5MB typical localStorage limit
+        const warningThreshold = quotaLimit * 0.8 // 80% warning
+        
+        if (storageSize > quotaLimit) {
+          // Storage quota exceeded - prevent save and show error
+          toast.error("Storage quota exceeded. Please export and delete some entries to free up space.")
+          return
+        } else if (storageSize > warningThreshold) {
+          // Approaching quota limit - show warning
+          toast.warning("Storage space getting low. Consider exporting and cleaning up old entries.")
+        }
+        
+        localStorage.setItem(STORAGE_KEY, dataStr)
       } catch (error) {
         console.error("Failed to save journal entries:", error)
+        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+          toast.error("Storage quota exceeded. Please export and delete some entries to free up space.")
+        } else {
+          toast.error("Failed to save entries. Please try again.")
+        }
       }
     }
   }, [entries, isLoaded])
 
-  const createEntry = useCallback((content: string, mood?: string): JournalEntry => {
+  const createEntry = useCallback((content: string, mood?: string): JournalEntry | null => {
     const now = new Date().toISOString()
     const newEntry: JournalEntry = {
       id: crypto.randomUUID(),
@@ -62,8 +84,26 @@ export function useJournal() {
       createdAt: now,
       updatedAt: now,
     }
-    setEntries((prev) => [newEntry, ...prev])
-    return newEntry
+    
+    try {
+      // Pre-check if adding this entry would exceed quota
+      const currentData = localStorage.getItem(STORAGE_KEY)
+      const currentSize = currentData ? new Blob([currentData]).size : 0
+      const entrySize = new Blob([JSON.stringify(newEntry)]).size
+      const quotaLimit = 5 * 1024 * 1024 // 5MB
+      
+      if (currentSize + entrySize > quotaLimit) {
+        toast.error("Cannot save entry - storage quota exceeded. Please export and delete some entries first.")
+        return null
+      }
+      
+      setEntries((prev) => [newEntry, ...prev])
+      return newEntry
+    } catch (error) {
+      console.error("Failed to create entry:", error)
+      toast.error("Failed to save entry. Please try again.")
+      return null
+    }
   }, [])
 
   const updateEntry = useCallback((id: string, content: string, mood?: string) => {
