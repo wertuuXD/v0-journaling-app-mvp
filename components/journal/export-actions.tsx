@@ -108,6 +108,10 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         if (y + headerHeight > bottom) {
           doc.addPage()
           y = margin
+        // Check if we need a new page
+        if (y > 270) {
+          doc.addPage()
+          y = 20
         }
 
         const dateStr = format(entryDate, "PPPP")
@@ -134,6 +138,9 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
           doc.setTextColor(124, 92, 255)
           const moodLabel = MOOD_LABELS[entry.mood] || entry.mood
           doc.text(`Mood: ${moodLabel}`, margin, y)
+          doc.setFontSize(10)
+          doc.setTextColor(124, 92, 255)
+          doc.text(`Mood: ${entry.mood}`, margin, y)
           y += 7
         }
 
@@ -161,6 +168,14 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
             doc.setDrawColor(240, 240, 240)
             doc.line(margin, y - 5, pageWidth - margin, y - 5)
           }
+        doc.text(lines, margin, y)
+
+        y += (lines.length * 6) + 15
+
+        // Separator between entries
+        if (index < entries.length - 1) {
+          doc.setDrawColor(240, 240, 240)
+          doc.line(margin, y - 8, pageWidth - margin, y - 8)
         }
       })
 
