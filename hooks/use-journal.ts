@@ -12,6 +12,16 @@ export interface JournalEntry {
 
 const STORAGE_KEY = "unwind-journal-entries"
 
+function isValidEntry(entry: any): entry is JournalEntry {
+  if (!entry || typeof entry !== 'object') return false
+  if (typeof entry.id !== 'string') return false
+  if (typeof entry.content !== 'string') return false
+  if (typeof entry.createdAt !== 'string' || Number.isNaN(Date.parse(entry.createdAt))) return false
+  // updatedAt is optional for legacy entries, but must be valid if present
+  if (entry.updatedAt !== undefined && (typeof entry.updatedAt !== 'string' || Number.isNaN(Date.parse(entry.updatedAt)))) return false
+  return true
+}
+
 export function useJournal() {
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
@@ -21,7 +31,10 @@ export function useJournal() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
-        setEntries(JSON.parse(stored))
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          setEntries(parsed.filter(isValidEntry))
+        }
       }
     } catch (error) {
       console.error("Failed to load journal entries:", error)
@@ -74,9 +87,11 @@ export function useJournal() {
 
   const importEntries = useCallback((importedEntries: JournalEntry[]) => {
     setEntries((prev) => {
-      // Merge entries, avoiding duplicates by ID
+      // Merge entries, avoiding duplicates by ID and validating
       const existingIds = new Set(prev.map(entry => entry.id))
-      const newEntries = importedEntries.filter(entry => !existingIds.has(entry.id))
+      const newEntries = importedEntries.filter(entry =>
+        isValidEntry(entry) && !existingIds.has(entry.id)
+      )
       
       // Combine and sort by creation date (newest first)
       const allEntries = [...newEntries, ...prev]
