@@ -3,7 +3,7 @@
 import { useCallback } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { cn } from "@/lib/utils"
-import { Download, Upload, AlertCircle, CheckCircle } from "lucide-react"
+import { Download, Upload, Shield } from "lucide-react"
 
 interface DataManagerProps {
   entries: JournalEntry[]
@@ -19,7 +19,7 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
       
       const link = document.createElement("a")
       link.href = url
-      link.download = `unwind-journal-backup-${new Date().toISOString().split("T")[0]}.json`
+      link.download = `unwind-backup-${new Date().toISOString().split("T")[0]}.json`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -39,74 +39,82 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
         const content = e.target?.result as string
         const importedEntries = JSON.parse(content) as JournalEntry[]
         
-        // Validate the imported data
         if (!Array.isArray(importedEntries)) {
-          throw new Error("Invalid file format")
+          throw new Error("Invalid format")
         }
 
         const validEntries = importedEntries.filter(entry => 
-          entry.id && 
-          entry.content && 
-          entry.createdAt && 
-          entry.updatedAt
+          entry.id && entry.content && entry.createdAt
         )
-
-        if (validEntries.length === 0) {
-          throw new Error("No valid entries found")
-        }
 
         onImport(validEntries)
       } catch (error) {
-        console.error("Failed to import entries:", error)
-        alert("Failed to import entries. Please check the file format.")
+        console.error("Failed to import:", error)
       }
     }
     reader.readAsText(file)
-    
-    // Reset the input
     event.target.value = ""
   }, [onImport])
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3">
-        {/* Export Button */}
-        <button
-          onClick={handleExport}
-          disabled={entries.length === 0}
-          className={cn(
-            "flex items-center justify-center gap-2 rounded-lg border border-border/30 bg-card/50 px-4 py-3 text-sm transition-colors hover:border-border hover:bg-card",
-            entries.length === 0 && "cursor-not-allowed opacity-50"
-          )}
-        >
-          <Download className="h-4 w-4" />
-          Export All Entries ({entries.length})
-        </button>
+    <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
+      <div className="space-y-4">
+        <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-semibold px-2">
+          Data Management
+        </h3>
 
-        {/* Import Button */}
-        <div className="relative">
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <div className="flex items-center justify-center gap-2 rounded-lg border border-border/30 bg-card/50 px-4 py-3 text-sm transition-colors hover:border-border hover:bg-card cursor-pointer">
-            <Upload className="h-4 w-4" />
-            Import Entries
+        <div className="flex flex-col gap-4">
+          <button
+            onClick={handleExport}
+            disabled={entries.length === 0}
+            className={cn(
+              "flex items-center justify-between rounded-2xl border border-border/10 bg-secondary/20 p-6 transition-all duration-300",
+              "hover:bg-secondary/40 hover:border-border/30 active:scale-[0.99]",
+              entries.length === 0 && "opacity-20 cursor-not-allowed"
+            )}
+          >
+            <div className="flex items-center gap-4">
+              <div className="rounded-full bg-primary/10 p-3 text-primary">
+                <Download className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium">Export Backup</p>
+                <p className="text-xs text-muted-foreground/50">Download your {entries.length} entries</p>
+              </div>
+            </div>
+          </button>
+
+          <div className="relative">
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div className="flex items-center justify-between rounded-2xl border border-border/10 bg-secondary/20 p-6 transition-all duration-300 hover:bg-secondary/40 hover:border-border/30">
+              <div className="flex items-center gap-4">
+                <div className="rounded-full bg-primary/10 p-3 text-primary">
+                  <Upload className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium">Import Backup</p>
+                  <p className="text-xs text-muted-foreground/50">Restore from a JSON file</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Info Messages */}
-      <div className="space-y-2">
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-          <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-          <span>Export creates a backup file with all your entries</span>
-        </div>
-        <div className="flex items-start gap-2 text-xs text-muted-foreground">
-          <CheckCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-          <span>Import merges entries from a backup file</span>
+      <div className="rounded-3xl bg-secondary/10 p-8 border border-border/5">
+        <div className="flex items-start gap-4">
+          <Shield className="h-5 w-5 text-primary/40 mt-1" />
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-foreground/80">Privacy First</h4>
+            <p className="text-xs leading-relaxed text-muted-foreground/50">
+              Your entries are stored locally on your device. We don't have servers that store your content, making it truly private. Backup your data often to ensure you never lose your thoughts.
+            </p>
+          </div>
         </div>
       </div>
     </div>

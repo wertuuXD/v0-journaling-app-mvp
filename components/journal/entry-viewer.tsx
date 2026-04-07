@@ -4,29 +4,7 @@ import { useState, useEffect } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { WritingEditor } from "./writing-editor"
 import { format } from "date-fns"
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react"
-import Image from "next/image"
-
-// Import mood images and labels from writing editor
-const MOOD_IMAGES: Record<string, string[]> = {
-  "😌": ["/moods/calm.jpg"],
-  "😊": ["/moods/happy.jpg"],
-  "😔": ["/moods/sad.jpg"],
-  "😤": ["/moods/frustrated.jpg"],
-  "😴": ["/moods/sleepy.jpg"],
-  "🤔": ["/moods/thoughtful.jpg"],
-  "😰": ["/moods/thoughtful.jpg"] // Use thoughtful image temporarily for anxious
-}
-
-const MOOD_LABELS: Record<string, string> = {
-  "😌": "Calm & peaceful",
-  "😊": "Happy & content",
-  "😔": "Feeling down",
-  "😤": "Frustrated",
-  "😴": "Sleepy & tired",
-  "🤔": "Thoughtful & reflective",
-  "😰": "Anxious & worried"
-}
+import { ArrowLeft, Pencil, Trash2, X } from "lucide-react"
 
 interface EntryViewerProps {
   entry: JournalEntry
@@ -44,14 +22,10 @@ export function EntryViewer({
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [formattedDate, setFormattedDate] = useState("")
 
   useEffect(() => {
     setMounted(true)
-    setFormattedDate(
-      format(new Date(entry.createdAt), "EEEE, MMMM d, yyyy 'at' h:mm a")
-    )
-  }, [entry.createdAt])
+  }, [])
 
   const handleSave = (content: string, mood?: string) => {
     onUpdate(content, mood)
@@ -65,13 +39,13 @@ export function EntryViewer({
 
   if (isEditing) {
     return (
-      <div className="flex h-full flex-col">
-        <div className="mb-4 flex items-center gap-4">
+      <div className="flex h-full flex-col animate-in fade-in duration-500">
+        <div className="mb-8 flex items-center gap-4">
           <button
             onClick={() => setIsEditing(false)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <X className="h-3 w-3" />
             Cancel
           </button>
         </div>
@@ -88,26 +62,28 @@ export function EntryViewer({
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-10 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3 w-3" />
           Back
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setIsEditing(true)}
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="text-muted-foreground/40 transition-all hover:text-foreground hover:scale-110"
+            title="Edit"
           >
             <Pencil className="h-4 w-4" />
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            className="text-muted-foreground/40 transition-all hover:text-destructive hover:scale-110"
+            title="Delete"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -115,61 +91,48 @@ export function EntryViewer({
       </div>
 
       {/* Entry content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mb-4 flex items-center gap-3">
-          <time className="text-sm text-muted-foreground">
-            {mounted ? formattedDate : "Loading..."}
-          </time>
-          {entry.mood && <span className="text-xl">{entry.mood}</span>}
+      <div className="flex-1 space-y-8">
+        <div className="flex items-center justify-between border-b border-border/10 pb-6">
+          <div className="space-y-1">
+            <time className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-semibold">
+              {mounted ? format(new Date(entry.createdAt), "EEEE, MMMM d, yyyy") : "Loading..."}
+            </time>
+            <p className="text-xs text-muted-foreground/30">
+              {mounted ? format(new Date(entry.createdAt), "h:mm a") : ""}
+            </p>
+          </div>
+          {entry.mood && (
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-3xl grayscale-0">{entry.mood}</span>
+            </div>
+          )}
         </div>
         
-        {/* Mood image display */}
-        {entry.mood && MOOD_IMAGES[entry.mood] && (
-          <div className="mb-6 flex justify-center">
-            <div className="relative w-full overflow-hidden rounded-2xl border border-border/30 bg-card/50">
-              <div className="relative aspect-video w-full">
-                <Image
-                  src={MOOD_IMAGES[entry.mood][0]}
-                  alt={MOOD_LABELS[entry.mood] || "Mood illustration"}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-sm font-medium text-foreground/90">
-                  {MOOD_LABELS[entry.mood]}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="whitespace-pre-wrap break-words text-lg leading-relaxed text-foreground/90">
+        <div className="whitespace-pre-wrap break-words text-xl leading-relaxed text-foreground/80 md:text-2xl" style={{ lineHeight: "1.8" }}>
           {entry.content}
         </div>
       </div>
 
       {/* Delete confirmation modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="mx-4 w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl animate-in zoom-in-95 duration-200">
-            <h3 className="mb-2 text-lg font-medium">Delete this entry?</h3>
-            <p className="mb-6 text-sm text-muted-foreground">
-              This action cannot be undone.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-md animate-in fade-in duration-300 px-6">
+          <div className="w-full max-w-sm rounded-3xl border border-border/20 bg-card p-10 shadow-2xl animate-in zoom-in-95 duration-300 text-center">
+            <h3 className="mb-3 text-xl font-medium">Delete this entry?</h3>
+            <p className="mb-10 text-sm text-muted-foreground/60 leading-relaxed">
+              This will remove your thoughts from this device forever.
             </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 rounded-lg border border-border bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-              >
-                Cancel
-              </button>
+            <div className="flex flex-col gap-3">
               <button
                 onClick={handleDelete}
-                className="flex-1 rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+                className="w-full rounded-2xl bg-destructive py-4 text-sm font-semibold text-destructive-foreground transition-all hover:opacity-90 active:scale-[0.98]"
               >
-                Delete
+                Delete Forever
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="w-full rounded-2xl bg-secondary/50 py-4 text-sm font-medium text-foreground/60 transition-all hover:bg-secondary active:scale-[0.98]"
+              >
+                Keep Entry
               </button>
             </div>
           </div>
