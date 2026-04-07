@@ -74,25 +74,117 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string
-        const importedEntries = JSON.parse(content) as JournalEntry[]
+        
+        // Enhanced validation
+        if (!content || content.trim().length === 0) {
+          throw new Error("File is empty")
+        }
+        
+        // Check file size (prevent huge files)
+        if (content.length > 10 * 1024 * 1024) { // 10MB limit
+          throw new Error("File too large. Maximum size is 10MB.")
+        }
+        
+        let importedEntries
+        try {
+          importedEntries = JSON.parse(content)
+        } catch (parseError) {
+          throw new Error("Invalid JSON format. Please ensure the file is a valid JSON.")
+        }
         
         if (!Array.isArray(importedEntries)) {
-          throw new Error("Invalid format")
+          throw new Error("Invalid format. File must contain an array of journal entries.")
         }
 
-        const validEntries = importedEntries.filter(entry => 
-          entry &&
-          typeof entry.id === 'string' &&
-          typeof entry.content === 'string' &&
-          typeof entry.createdAt === 'string' &&
-          !Number.isNaN(Date.parse(entry.createdAt))
-        )
+        if (importedEntries.length === 0) {
+          toast.warning("Import file contains no entries.")
+          return
+        }
+
+        if (importedEntries.length > 10000) {
+          throw new Error("Too many entries. Maximum 10,000 entries allowed.")
+        }
+
+        const validEntries = importedEntries.filter((entry, index) => {
+          // Basic structure validation
+          if (!entry || typeof entry !== 'object') {
+            console.warn(`Invalid entry at index ${index}: not an object`)
+            return false
+          }
+
+          // Required fields validation
+          if (typeof entry.id !== 'string' || entry.id.length === 0) {
+            console.warn(`Invalid entry at index ${index}: missing or invalid id`)
+            return false
+          }
+
+          if (typeof entry.content !== 'string' || entry.content.length === 0) {
+            console.warn(`Invalid entry at index ${index}: missing or empty content`)
+            return false
+          }
+
+          if (typeof entry.createdAt !== 'string') {
+            console.warn(`Invalid entry at index ${index}: missing or invalid createdAt`)
+            return false
+          }
+
+          // Date validation
+          const entryDate = new Date(entry.createdAt)
+          if (Number.isNaN(entryDate.getTime())) {
+            console.warn(`Invalid entry at index ${index}: invalid date format`)
+            return false
+          }
+
+          // Content length validation (prevent abuse)
+          if (entry.content.length > 100000) { // 100KB per entry
+            console.warn(`Invalid entry at index ${index}: content too long`)
+            return false
+          }
+
+          // Date range validation (reasonable dates only)
+          const minDate = new Date('2000-01-01')
+          const maxDate = new Date('2030-12-31')
+          if (entryDate < minDate || entryDate > maxDate) {
+            console.warn(`Invalid entry at index ${index}: date out of reasonable range`)
+            return false
+          }
+
+          // Optional mood validation
+          if (entry.mood && typeof entry.mood !== 'string') {
+            console.warn(`Invalid entry at index ${index}: mood must be a string`)
+            return false
+          }
+
+          return true
+        })
+
+        const invalidCount = importedEntries.length - validEntries.length
+        if (validEntries.length === 0) {
+          throw new Error(`No valid entries found. All ${importedEntries.length} entries were invalid.`)
+        }
+
+        // Check for duplicate IDs
+        const idSet = new Set(validEntries.map(e => e.id))
+        if (idSet.size !== validEntries.length) {
+          console.warn('Duplicate entry IDs detected, duplicates will be ignored')
+          const uniqueEntries = validEntries.filter((entry, index, self) => 
+            index === self.findIndex(e => e.id === entry.id)
+          )
+          onImport(uniqueEntries)
+          toast.success(`Import completed! ${uniqueEntries.length} unique entries imported (${invalidCount} invalid entries skipped)`)
+          return
+        }
 
         onImport(validEntries)
-        toast.success(`Import completed! ${validEntries.length} entries imported`)
+        if (invalidCount > 0) {
+          toast.warning(`Import completed with warnings. ${validEntries.length} entries imported, ${invalidCount} invalid entries skipped.`)
+        } else {
+          toast.success(`Import completed! ${validEntries.length} entries imported`)
+        }
       } catch (error) {
         console.error("Failed to import:", error)
-        toast.error("Failed to import file. Please check the file format and try again.")
+        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+        toast.error(`Import failed: ${errorMessage}`)
       }
     }
     reader.readAsText(file)

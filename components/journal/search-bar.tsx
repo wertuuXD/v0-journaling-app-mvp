@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { cn } from "@/lib/utils"
 import { Search, X } from "lucide-react"
@@ -13,25 +13,40 @@ interface SearchBarProps {
 
 export function SearchBar({ entries, onResults, onClear }: SearchBarProps) {
   const [query, setQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
 
-  const handleClear = useCallback(() => {
-    setQuery("")
-    onClear()
-  }, [onClear])
+  // Debounce the search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 300) // 300ms delay
 
-  const handleQueryChange = useCallback((newQuery: string) => {
-    setQuery(newQuery)
-    if (!newQuery.trim()) {
+    return () => clearTimeout(timer)
+  }, [query])
+
+  // Perform search when debounced query changes
+  useEffect(() => {
+    if (!debouncedQuery.trim()) {
       onClear()
     } else {
-      const searchTerm = newQuery.toLowerCase()
+      const searchTerm = debouncedQuery.toLowerCase()
       const filtered = entries.filter(entry => 
         entry.content.toLowerCase().includes(searchTerm) ||
         (entry.mood && entry.mood.toLowerCase().includes(searchTerm))
       )
       onResults(filtered)
     }
-  }, [entries, onResults, onClear])
+  }, [debouncedQuery, entries, onResults, onClear])
+
+  const handleClear = useCallback(() => {
+    setQuery("")
+    setDebouncedQuery("")
+    onClear()
+  }, [onClear])
+
+  const handleQueryChange = useCallback((newQuery: string) => {
+    setQuery(newQuery)
+  }, [])
 
   return (
     <div className="space-y-4">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useJournal, type JournalEntry } from "@/hooks/use-journal"
 import { WritingEditor } from "./writing-editor"
 import { Timeline } from "./timeline"
@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 import { BookOpen, PenLine, Settings, Lock } from "lucide-react"
 import { UnwindLogo } from "./unwind-logo"
+import { ErrorBoundary } from "@/components/error-boundary"
 
 type View = "write" | "timeline" | "entry" | "data"
 
@@ -18,6 +19,83 @@ export function JournalApp() {
     useJournal()
   const [currentView, setCurrentView] = useState<View>("write")
   const [selectedEntryId, setSelectedEntryId] = useState<string>()
+
+  // Keyboard navigation handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle keyboard shortcuts when not typing in text areas
+      if (event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement) {
+        return
+      }
+
+      // Detect mobile device
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      
+      if (isMobile) {
+        // Mobile-friendly shortcuts (using simple keys)
+        if (event.key === 'n' || event.key === 'N') {
+          event.preventDefault()
+          setCurrentView("write")
+          return
+        }
+        if (event.key === 't' || event.key === 'T') {
+          event.preventDefault()
+          setCurrentView("timeline")
+          return
+        }
+        if (event.key === 's' || event.key === 'S') {
+          event.preventDefault()
+          setCurrentView("data")
+          return
+        }
+      } else {
+        // Desktop shortcuts (using Alt to avoid browser conflicts)
+        if (event.altKey && event.key === 'n') {
+          event.preventDefault()
+          setCurrentView("write")
+          return
+        }
+        if (event.altKey && event.key === 't') {
+          event.preventDefault()
+          setCurrentView("timeline")
+          return
+        }
+        if (event.altKey && event.key === 's') {
+          event.preventDefault()
+          setCurrentView("data")
+          return
+        }
+      }
+
+      // Escape: Go back to timeline (works on both mobile and desktop)
+      if (event.key === 'Escape') {
+        if (currentView === "entry") {
+          setSelectedEntryId(undefined)
+          setCurrentView("timeline")
+        } else if (currentView !== "timeline") {
+          setCurrentView("timeline")
+        }
+        return
+      }
+
+      // Number keys: Quick navigation (works on both)
+      if (event.key === '1') {
+        setCurrentView("write")
+        return
+      }
+      if (event.key === '2') {
+        setCurrentView("timeline")
+        return
+      }
+      if (event.key === '3') {
+        setCurrentView("data")
+        return
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [currentView])
 
   const handleSaveNewEntry = useCallback(
     (content: string, mood?: string) => {
@@ -86,7 +164,9 @@ export function JournalApp() {
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
-            title="New entry"
+            title="New entry (N on mobile, Alt+N on desktop)"
+            aria-label="New entry (N on mobile, Alt+N on desktop)"
+            aria-keyshortcuts="N; Alt+N"
           >
             <PenLine className="h-5 w-5" />
           </button>
@@ -98,7 +178,9 @@ export function JournalApp() {
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
-            title="Timeline"
+            title="Timeline (T on mobile, Alt+T on desktop)"
+            aria-label="Timeline (T on mobile, Alt+T on desktop)"
+            aria-keyshortcuts="T; Alt+T"
           >
             <BookOpen className="h-5 w-5" />
           </button>
@@ -110,7 +192,9 @@ export function JournalApp() {
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
-            title="Settings"
+            title="Settings (S on mobile, Alt+S on desktop)"
+            aria-label="Settings (S on mobile, Alt+S on desktop)"
+            aria-keyshortcuts="S; Alt+S"
           >
             <Settings className="h-5 w-5" />
           </button>
@@ -123,37 +207,61 @@ export function JournalApp() {
       <main className="mx-auto w-full max-w-2xl flex-1 flex flex-col px-6 pb-20">
         <div className="flex-1 flex flex-col gap-8">
           {currentView === "write" && (
-            <WritingEditor
-              onSave={handleSaveNewEntry}
-              placeholder="What's on your mind?"
-            />
+            <ErrorBoundary fallback={
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-muted-foreground">Writing editor temporarily unavailable. Please refresh.</p>
+              </div>
+            }>
+              <WritingEditor
+                onSave={handleSaveNewEntry}
+                placeholder="What's on your mind?"
+              />
+            </ErrorBoundary>
           )}
 
           {currentView === "timeline" && (
-            <Timeline
-              entries={entries}
-              selectedId={selectedEntryId}
-              onSelect={handleSelectEntry}
-            />
+            <ErrorBoundary fallback={
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-muted-foreground">Timeline temporarily unavailable. Please refresh.</p>
+              </div>
+            }>
+              <Timeline
+                entries={entries}
+                selectedId={selectedEntryId}
+                onSelect={handleSelectEntry}
+              />
+            </ErrorBoundary>
           )}
 
           {currentView === "entry" && selectedEntry && (
-            <EntryViewer
-              entry={selectedEntry}
-              onUpdate={handleUpdateEntry}
-              onDelete={handleDeleteEntry}
-              onBack={() => {
-                setSelectedEntryId(undefined)
-                setCurrentView("timeline")
-              }}
-            />
+            <ErrorBoundary fallback={
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-muted-foreground">Entry viewer temporarily unavailable. Please refresh.</p>
+              </div>
+            }>
+              <EntryViewer
+                entry={selectedEntry}
+                onUpdate={handleUpdateEntry}
+                onDelete={handleDeleteEntry}
+                onBack={() => {
+                  setSelectedEntryId(undefined)
+                  setCurrentView("timeline")
+                }}
+              />
+            </ErrorBoundary>
           )}
 
           {currentView === "data" && (
-            <DataManager
-              entries={entries}
-              onImport={handleImport}
-            />
+            <ErrorBoundary fallback={
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-muted-foreground">Settings temporarily unavailable. Please refresh.</p>
+              </div>
+            }>
+              <DataManager
+                entries={entries}
+                onImport={handleImport}
+              />
+            </ErrorBoundary>
           )}
         </div>
       </main>

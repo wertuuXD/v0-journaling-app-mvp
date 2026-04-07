@@ -7,26 +7,38 @@ A beautiful, minimalist, and privacy-focused journaling application designed to 
 
 *Perfect for mobile and desktop — no signup required, your thoughts stay yours.*
 
-## ✨ Features
+## Features
 
 ### Core Journaling
 - **Distraction-Free Editor**: A clean, expansive writing space with relaxed line spacing and autofocus, designed for flow.
 - **Inspiring Prompts**: Not sure where to start? Use quick prompts like *"What happened today?"* or *"How do you feel?"* to break the ice.
 - **7 Expressive Moods**: Track your emotional landscape with a range of moods from *Calm* and *Reflective* to *Frustrated* and *Anxious*.
 - **Timeline Archive**: Your entries are automatically organized into a beautiful chronological timeline with smart date grouping (Today, Yesterday, etc.).
-- **Search & Discovery**: Instantly find past thoughts using full-text search or filter by specific mood emojis.
+- **Search & Discovery**: Instantly find past thoughts using debounced full-text search with no-results feedback, or filter by specific mood emojis.
 
 ### Export & Sharing
-- **Custom-Styled PDFs**: Export your journal entries into beautiful, readable PDF documents—perfect for printing or long-term storage.
-- **Plain Text Exports**: Generate lightweight `.txt` files for easy sharing or integration with other writing tools.
-- **Smart Date Filtering**: Use the integrated calendar range picker to export specific timeframes—a weekend, a month, or your entire history.
-- **JSON Data Portability**: Download your entire database as a JSON backup at any time.
+- **Custom-Styled PDFs**: Export your journal entries into beautiful, readable PDF documents with ordinal dates (8th April, 2026) and mood labels.
+- **Plain Text Exports**: Generate lightweight `.txt` files with consistent formatting matching PDF exports.
+- **Smart Date Filtering**: Use the integrated calendar range picker to export specific timeframes with real-time notifications.
+- **JSON Data Portability**: Download your entire database as a JSON backup with enhanced validation and security.
+
+### Performance & Reliability
+- **Smart Storage Management**: Automatic localStorage quota monitoring with warnings and graceful degradation.
+- **Error Boundaries**: Comprehensive error handling prevents app crashes with graceful recovery options.
+- **Search Optimization**: Debounced search provides smooth performance even with thousands of entries.
+- **Import Security**: Enhanced validation protects against malicious files with size limits and content sanitization.
+
+### Accessibility & UX
+- **Cross-Platform Keyboard Navigation**: Mobile-friendly shortcuts (N, T, S) and desktop shortcuts (Alt+N, Alt+T, Alt+S).
+- **Screen Reader Support**: Full ARIA labels and keyboard accessibility throughout the app.
+- **Toast Notifications**: Real-time feedback for all operations (exports, imports, errors, warnings).
+- **Responsive Design**: Mobile-first vertical layout that adapts beautifully to all screen sizes.
 
 ### Privacy & Experience
 - **Local-First Privacy**: Your data never leaves your device by default. All entries are stored securely in your browser's local storage.
 - **Seamless Dark Mode**: Automatic system theme detection with a manual toggle for late-night reflection.
 - **Premium Animations**: Powered by Framer Motion for a fluid, tactile feel that makes journaling a joy.
-- **Responsive by Design**: A mobile-first vertical layout that looks stunning on every screen size.
+- **No Tracking**: No analytics, no data collection, your thoughts remain completely private.
 
 ## 🚀 Getting Started
 
@@ -99,6 +111,27 @@ We are currently working on an optional Cloud Sync feature using **Supabase**. W
 2. Run the `database-setup.sql` in your Supabase SQL Editor.
 3. Add your `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to a `.env.local` file.
 4. Enable "Cloud Sync" in the app settings.
+
+## Testing
+
+### Test Data & Cases
+The app includes comprehensive testing tools for quality assurance:
+
+- **`generate-test-data.js`** - Creates sample entries across multiple dates for testing
+- **`quota-test-data.js`** - Generates large entries to test localStorage quota handling
+- **`test-cases.md`** - 5 comprehensive test cases covering all functionality
+
+### Running Tests
+1. Open the app in your browser
+2. Open Developer Console (F12)
+3. Copy and paste the test data scripts
+4. Follow the test cases in `test-cases.md`
+
+### Performance Testing
+- Use quota test data to test storage limits and warnings
+- Test search performance with 1000+ entries
+- Verify error boundaries with intentional errors
+- Test keyboard navigation on mobile and desktop
 
 ## 🎨 Design Principles
 

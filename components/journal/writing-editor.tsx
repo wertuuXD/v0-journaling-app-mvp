@@ -56,6 +56,27 @@ export function WritingEditor({
         e.preventDefault()
         onSave(content, mood)
       }
+      
+      // Escape key: Clear content and go back to timeline
+      if (e.key === "Escape") {
+        if (content.trim()) {
+          setContent("")
+          setMood(undefined)
+        } else {
+          // If already empty, go back to timeline
+          window.location.hash = "#timeline"
+        }
+      }
+      
+      // Tab: Navigate to mood selection
+      if (e.key === "Tab" && !e.shiftKey) {
+        e.preventDefault()
+        // Focus first mood button
+        const moodButtons = document.querySelector('[data-mood-button]')
+        if (moodButtons) {
+          (moodButtons as HTMLElement).focus()
+        }
+      }
     },
     [content, mood, onSave]
   )
@@ -75,6 +96,8 @@ export function WritingEditor({
             key={prompt}
             onClick={() => handlePromptClick(prompt)}
             className="rounded-full border border-border/20 bg-secondary/50 px-5 py-2 text-xs font-medium text-muted-foreground/80 transition-all hover:bg-accent hover:text-foreground hover:border-primary/20"
+            title={`Insert prompt: ${prompt}`}
+            aria-label={`Insert prompt: ${prompt}`}
           >
             {prompt}
           </button>
@@ -110,13 +133,36 @@ export function WritingEditor({
               <button
                 key={emoji}
                 onClick={() => handleMoodClick(emoji)}
-                title={MOOD_LABELS[emoji]}
+                title={`${MOOD_LABELS[emoji]} (Tab to navigate, Enter to select)`}
+                aria-label={`${MOOD_LABELS[emoji]} mood`}
+                data-mood-button
                 className={cn(
                   "text-2xl transition-all duration-300",
                   mood === emoji
                     ? "scale-125 brightness-110"
                     : "opacity-30 grayscale hover:opacity-100 hover:grayscale-0"
                 )}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleMoodClick(emoji)
+                  }
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    e.preventDefault()
+                    const currentIndex = MOODS.indexOf(emoji)
+                    const nextIndex = e.key === 'ArrowRight' 
+                      ? (currentIndex + 1) % MOODS.length
+                      : (currentIndex - 1 + MOODS.length) % MOODS.length
+                    const nextButton = document.querySelector(`[data-mood-button]:nth-child(${nextIndex + 1})`) as HTMLElement
+                    nextButton?.focus()
+                  }
+                  if (e.key === 'Tab' && !e.shiftKey && emoji === MOODS[MOODS.length - 1]) {
+                    e.preventDefault()
+                    // Focus save button
+                    const saveButton = document.querySelector('[data-save-button]') as HTMLElement
+                    saveButton?.focus()
+                  }
+                }}
               >
                 {emoji}
               </button>
@@ -128,12 +174,29 @@ export function WritingEditor({
         <button
           onClick={() => content.trim() && onSave(content, mood)}
           disabled={!content.trim()}
+          data-save-button
           className={cn(
             "w-full rounded-2xl bg-primary py-5 text-sm font-semibold text-primary-foreground transition-all duration-300 shadow-xl shadow-primary/10",
             content.trim()
               ? "active:scale-[0.98] hover:opacity-90"
               : "opacity-10 cursor-not-allowed"
           )}
+          title="Save entry (Ctrl+Enter)"
+          aria-label="Save entry (Ctrl+Enter)"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              if (content.trim()) {
+                onSave(content, mood)
+              }
+            }
+            if (e.key === 'Tab' && !e.shiftKey) {
+              e.preventDefault()
+              // Loop back to first mood button
+              const firstMoodButton = document.querySelector('[data-mood-button]') as HTMLElement
+              firstMoodButton?.focus()
+            }
+          }}
         >
           Save Entry
         </button>

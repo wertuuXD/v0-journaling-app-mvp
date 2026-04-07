@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { cn } from "@/lib/utils"
 import { format, isToday, isYesterday } from "date-fns"
+import { Search } from "lucide-react"
 import { SearchBar } from "./search-bar"
 
 interface TimelineProps {
@@ -42,9 +43,9 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
     setIsSearching(false)
   }, [])
 
+  const entriesToGroup = isSearching ? searchResults : entries
   const groupedEntries = useMemo(() => {
     if (!mounted) return {}
-    const entriesToGroup = isSearching ? searchResults : entries
     return entriesToGroup.reduce<Record<string, JournalEntry[]>>((acc, entry) => {
       const dateKey = formatDate(entry.createdAt)
       if (!acc[dateKey]) {
@@ -53,11 +54,41 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
       acc[dateKey].push(entry)
       return acc
     }, {})
-  }, [entries, searchResults, isSearching, mounted])
+  }, [entriesToGroup, mounted])
 
   if (!mounted) return null
 
-  if (entries.length === 0) {
+  // Show no results message when search returns empty
+  if (isSearching && entriesToGroup.length === 0) {
+    return (
+      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
+        <SearchBar 
+          entries={entries}
+          onResults={handleSearchResults}
+          onClear={handleClearSearch}
+        />
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex justify-center mb-6">
+            <div className="rounded-full bg-muted/50 p-4">
+              <Search className="h-6 w-6 text-muted-foreground/40" />
+            </div>
+          </div>
+          <h3 className="text-lg font-medium text-foreground mb-2">No entries found</h3>
+          <p className="text-muted-foreground/60 text-sm mb-4">
+            Try different keywords or check your spelling
+          </p>
+          <button
+            onClick={handleClearSearch}
+            className="text-xs text-muted-foreground/40 hover:text-foreground transition-colors"
+          >
+            Clear search
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (entries.length === 0 && !isSearching) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-700">
         <p className="text-muted-foreground/40 text-sm italic">Silence is a valid entry...</p>
