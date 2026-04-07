@@ -5,49 +5,49 @@
 
 /* Unwind - Cozy pastel journaling theme */
 :root {
-  /* Warm cream background for a cozy feel */
-  --background: oklch(0.97 0.01 85);
-  --foreground: oklch(0.35 0.03 50);
+  /* Warm vanilla cream background for ultimate coziness */
+  --background: oklch(0.98 0.015 90);
+  --foreground: oklch(0.32 0.04 45);
   
-  --card: oklch(0.99 0.005 85);
-  --card-foreground: oklch(0.35 0.03 50);
+  --card: oklch(0.995 0.008 90);
+  --card-foreground: oklch(0.32 0.04 45);
   
-  --popover: oklch(0.99 0.005 85);
-  --popover-foreground: oklch(0.35 0.03 50);
+  --popover: oklch(0.995 0.008 90);
+  --popover-foreground: oklch(0.32 0.04 45);
   
-  /* Soft rose/blush accent */
-  --primary: oklch(0.72 0.1 15);
-  --primary-foreground: oklch(0.99 0.005 85);
+  /* Soft peachy rose accent - warm and inviting */
+  --primary: oklch(0.75 0.12 20);
+  --primary-foreground: oklch(0.995 0.008 90);
   
-  --secondary: oklch(0.92 0.03 85);
-  --secondary-foreground: oklch(0.4 0.03 50);
+  --secondary: oklch(0.94 0.04 90);
+  --secondary-foreground: oklch(0.38 0.04 45);
   
-  --muted: oklch(0.94 0.02 85);
-  --muted-foreground: oklch(0.55 0.02 50);
+  --muted: oklch(0.96 0.03 90);
+  --muted-foreground: oklch(0.52 0.03 45);
   
-  /* Soft lavender accent */
-  --accent: oklch(0.85 0.08 300);
-  --accent-foreground: oklch(0.35 0.03 50);
+  /* Soft lavender accent - calming and gentle */
+  --accent: oklch(0.87 0.09 310);
+  --accent-foreground: oklch(0.32 0.04 45);
   
-  --destructive: oklch(0.65 0.18 25);
-  --destructive-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.68 0.16 20);
+  --destructive-foreground: oklch(0.995 0.008 90);
   
-  --border: oklch(0.88 0.03 85);
-  --input: oklch(0.95 0.015 85);
-  --ring: oklch(0.72 0.1 15);
+  --border: oklch(0.90 0.04 90);
+  --input: oklch(0.97 0.02 90);
+  --ring: oklch(0.75 0.12 20);
   
-  --chart-1: oklch(0.72 0.1 15);
-  --chart-2: oklch(0.8 0.1 180);
-  --chart-3: oklch(0.85 0.08 300);
-  --chart-4: oklch(0.82 0.1 85);
-  --chart-5: oklch(0.75 0.12 200);
+  --chart-1: oklch(0.75 0.12 20);
+  --chart-2: oklch(0.82 0.08 180);
+  --chart-3: oklch(0.87 0.09 310);
+  --chart-4: oklch(0.85 0.06 90);
+  --chart-5: oklch(0.78 0.1 200);
   
   --radius: 1rem;
   
-  --sidebar: oklch(0.95 0.015 85);
-  --sidebar-foreground: oklch(0.35 0.03 50);
-  --sidebar-primary: oklch(0.72 0.1 15);
-  --sidebar-primary-foreground: oklch(0.99 0.005 85);
+  --sidebar: oklch(0.97 0.02 90);
+  --sidebar-foreground: oklch(0.32 0.04 45);
+  --sidebar-primary: oklch(0.75 0.12 20);
+  --sidebar-primary-foreground: oklch(0.995 0.008 90);
   --sidebar-accent: oklch(0.92 0.03 300);
   --sidebar-accent-foreground: oklch(0.35 0.03 50);
   --sidebar-border: oklch(0.88 0.03 85);

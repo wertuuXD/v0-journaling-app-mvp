@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { cn } from "@/lib/utils"
 import { format, isToday, isYesterday } from "date-fns"
+import { SearchBar } from "./search-bar"
 
 interface TimelineProps {
   entries: JournalEntry[]
@@ -24,15 +25,28 @@ function formatTime(dateString: string): string {
 
 export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
   const [mounted, setMounted] = useState(false)
+  const [searchResults, setSearchResults] = useState<JournalEntry[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  const handleSearchResults = useCallback((results: JournalEntry[]) => {
+    setSearchResults(results)
+    setIsSearching(true)
+  }, [])
+
+  const handleClearSearch = useCallback(() => {
+    setSearchResults([])
+    setIsSearching(false)
+  }, [])
+
   // Memoize grouped entries to avoid recalculating on every render
   const groupedEntries = useMemo(() => {
     if (!mounted) return {}
-    return entries.reduce<Record<string, JournalEntry[]>>((acc, entry) => {
+    const entriesToGroup = isSearching ? searchResults : entries
+    return entriesToGroup.reduce<Record<string, JournalEntry[]>>((acc, entry) => {
       const dateKey = formatDate(entry.createdAt)
       if (!acc[dateKey]) {
         acc[dateKey] = []
@@ -40,7 +54,7 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
       acc[dateKey].push(entry)
       return acc
     }, {})
-  }, [entries, mounted])
+  }, [entries, searchResults, isSearching, mounted])
   // Show loading placeholder before mount to avoid hydration mismatch
   if (!mounted) {
     return (
@@ -62,8 +76,50 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
     )
   }
 
+  if (isSearching && searchResults.length === 0) {
+    return (
+      <div className="space-y-6">
+        <SearchBar 
+          entries={entries}
+          onResults={handleSearchResults}
+          onClear={handleClearSearch}
+        />
+        <div className="flex h-full flex-col items-center justify-center text-center">
+          <div className="mb-4 text-4xl opacity-30">🔍</div>
+          <p className="text-muted-foreground">No results found</p>
+          <p className="mt-1 text-sm text-muted-foreground/70">
+            Try different keywords
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-0 pb-8">
+      {/* Search Bar */}
+      <SearchBar 
+        entries={entries}
+        onResults={handleSearchResults}
+        onClear={handleClearSearch}
+      />
+      
+      {/* Search Results Header */}
+      {isSearching && (
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            Search Results
+          </h3>
+          <button
+            onClick={handleClearSearch}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Clear search
+          </button>
+        </div>
+      )}
+
+      {/* Entries */}
       {Object.entries(groupedEntries).map(([date, dateEntries]) => (
         <div key={date}>
           <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -87,7 +143,7 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
                   </span>
                   {entry.mood && <span className="text-lg">{entry.mood}</span>}
                 </div>
-                <p className="line-clamp-2 text-sm text-foreground/80">
+                <p className="text-sm text-foreground/80 whitespace-pre-wrap break-words">
                   {entry.content}
                 </p>
               </button>

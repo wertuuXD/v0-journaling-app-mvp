@@ -10,7 +10,7 @@ const PROMPTS = [
   "What's on your mind?",
 ]
 
-const MOODS = ["😌", "😊", "😔", "😤", "😴", "🤔"]
+const MOODS = ["😌", "😊", "😔", "😤", "😴", "🤔", "😰"]
 
 const MOOD_IMAGES: Record<string, string[]> = {
   "😌": ["/moods/calm.jpg"],
@@ -19,15 +19,17 @@ const MOOD_IMAGES: Record<string, string[]> = {
   "😤": ["/moods/frustrated.jpg"],
   "😴": ["/moods/sleepy.jpg"],
   "🤔": ["/moods/thoughtful.jpg"],
+  "😰": ["/moods/anxious.jpg"]
 }
 
 const MOOD_LABELS: Record<string, string> = {
   "😌": "Calm & peaceful",
   "😊": "Happy & content",
-  "😔": "A bit down",
+  "😔": "Feeling down",
   "😤": "Frustrated",
-  "😴": "Sleepy",
-  "🤔": "Thoughtful",
+  "😴": "Sleepy & tired",
+  "🤔": "Thoughtful & reflective",
+  "😰": "Anxious & worried"
 }
 
 interface WritingEditorProps {
@@ -108,8 +110,22 @@ export function WritingEditor({
   )
 
   const handlePromptClick = (prompt: string) => {
-    const newContent = content ? `${content}\n\n${prompt}\n` : `${prompt}\n`
-    setContent(newContent)
+    // Check if prompt already exists in content
+    const promptWithNewline = `${prompt}\n`
+    const promptWithDoubleNewline = `\n\n${prompt}\n`
+    
+    if (content.includes(promptWithNewline) || content.includes(promptWithDoubleNewline)) {
+      // Remove the prompt if it already exists
+      const lines = content.split('\n')
+      const filteredLines = lines.filter(line => 
+        line.trim() !== prompt.trim() && line.trim() !== ''
+      )
+      setContent(filteredLines.join('\n'))
+    } else {
+      // Add the prompt if it doesn't exist
+      const newContent = content ? `${content}\n\n${prompt}\n` : `${prompt}\n`
+      setContent(newContent)
+    }
     textareaRef.current?.focus()
   }
 
@@ -131,7 +147,7 @@ export function WritingEditor({
       )}
 
       {/* Writing area */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-h-0">
         <textarea
           ref={textareaRef}
           value={content}
@@ -142,7 +158,10 @@ export function WritingEditor({
             "h-full w-full resize-none bg-transparent text-lg leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none",
             "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border/50"
           )}
-          style={{ lineHeight: "1.8" }}
+          style={{ 
+            lineHeight: "1.8",
+            minHeight: "200px"
+          }}
         />
 
         {/* Saving indicator */}

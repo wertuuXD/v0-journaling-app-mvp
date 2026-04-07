@@ -5,6 +5,28 @@ import { type JournalEntry } from "@/hooks/use-journal"
 import { WritingEditor } from "./writing-editor"
 import { format } from "date-fns"
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react"
+import Image from "next/image"
+
+// Import mood images and labels from writing editor
+const MOOD_IMAGES: Record<string, string[]> = {
+  "😌": ["/moods/calm.jpg"],
+  "😊": ["/moods/happy.jpg"],
+  "😔": ["/moods/sad.jpg"],
+  "😤": ["/moods/frustrated.jpg"],
+  "😴": ["/moods/sleepy.jpg"],
+  "🤔": ["/moods/thoughtful.jpg"],
+  "😰": ["/moods/anxious.jpg"]
+}
+
+const MOOD_LABELS: Record<string, string> = {
+  "😌": "Calm & peaceful",
+  "😊": "Happy & content",
+  "😔": "Feeling down",
+  "😤": "Frustrated",
+  "😴": "Sleepy & tired",
+  "🤔": "Thoughtful & reflective",
+  "😰": "Anxious & worried"
+}
 
 interface EntryViewerProps {
   entry: JournalEntry
@@ -93,14 +115,37 @@ export function EntryViewer({
       </div>
 
       {/* Entry content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto">
         <div className="mb-4 flex items-center gap-3">
           <time className="text-sm text-muted-foreground">
             {mounted ? formattedDate : "Loading..."}
           </time>
           {entry.mood && <span className="text-xl">{entry.mood}</span>}
         </div>
-        <div className="whitespace-pre-wrap text-lg leading-relaxed text-foreground/90">
+        
+        {/* Mood image display */}
+        {entry.mood && MOOD_IMAGES[entry.mood] && (
+          <div className="mb-6 flex justify-center">
+            <div className="relative w-full overflow-hidden rounded-2xl border border-border/30 bg-card/50">
+              <div className="relative aspect-video w-full">
+                <Image
+                  src={MOOD_IMAGES[entry.mood][0]}
+                  alt={MOOD_LABELS[entry.mood] || "Mood illustration"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-sm font-medium text-foreground/90">
+                  {MOOD_LABELS[entry.mood]}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="whitespace-pre-wrap break-words text-lg leading-relaxed text-foreground/90">
           {entry.content}
         </div>
       </div>

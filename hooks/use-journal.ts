@@ -72,6 +72,20 @@ export function useJournal() {
     [entries]
   )
 
+  const importEntries = useCallback((importedEntries: JournalEntry[]) => {
+    setEntries((prev) => {
+      // Merge entries, avoiding duplicates by ID
+      const existingIds = new Set(prev.map(entry => entry.id))
+      const newEntries = importedEntries.filter(entry => !existingIds.has(entry.id))
+      
+      // Combine and sort by creation date (newest first)
+      const allEntries = [...newEntries, ...prev]
+      return allEntries.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    })
+  }, [])
+
   return {
     entries,
     isLoaded,
@@ -79,5 +93,6 @@ export function useJournal() {
     updateEntry,
     deleteEntry,
     getEntry,
+    importEntries,
   }
 }

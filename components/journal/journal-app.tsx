@@ -2,17 +2,21 @@
 
 import { useState, useCallback } from "react"
 import { useJournal, type JournalEntry } from "@/hooks/use-journal"
+import { useSupabaseSync } from "@/hooks/use-supabase-sync"
 import { WritingEditor } from "./writing-editor"
 import { Timeline } from "./timeline"
 import { EntryViewer } from "./entry-viewer"
+import { DataManager } from "./data-manager"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
-import { BookOpen, PenLine, Lock } from "lucide-react"
+import { BookOpen, PenLine, Lock, Settings } from "lucide-react"
 
-type View = "write" | "timeline" | "entry"
+type View = "write" | "timeline" | "entry" | "data"
 
 export function JournalApp() {
-  const { entries, isLoaded, createEntry, updateEntry, deleteEntry, getEntry } =
+  const { entries, isLoaded, createEntry, updateEntry, deleteEntry, getEntry, importEntries } =
     useJournal()
+  // const sync = useSupabaseSync()
   const [currentView, setCurrentView] = useState<View>("write")
   const [selectedEntryId, setSelectedEntryId] = useState<string>()
 
@@ -51,6 +55,11 @@ export function JournalApp() {
     setSelectedEntryId(undefined)
     setCurrentView("write")
   }, [])
+
+  const handleImport = useCallback((importedEntries: JournalEntry[]) => {
+    importEntries(importedEntries)
+    setCurrentView("timeline")
+  }, [importEntries])
 
   const selectedEntry = selectedEntryId ? getEntry(selectedEntryId) : undefined
 
@@ -96,6 +105,19 @@ export function JournalApp() {
           >
             <BookOpen className="h-5 w-5" />
           </button>
+          <button
+            onClick={() => setCurrentView("data")}
+            className={cn(
+              "rounded-lg p-2 transition-colors",
+              currentView === "data"
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            )}
+            title="Data management"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -121,7 +143,17 @@ export function JournalApp() {
             entry={selectedEntry}
             onUpdate={handleUpdateEntry}
             onDelete={handleDeleteEntry}
-            onBack={handleBackToWrite}
+            onBack={() => {
+              setSelectedEntryId(undefined)
+              setCurrentView("timeline")
+            }}
+          />
+        )}
+
+        {currentView === "data" && (
+          <DataManager 
+            entries={entries}
+            onImport={handleImport}
           />
         )}
       </main>
