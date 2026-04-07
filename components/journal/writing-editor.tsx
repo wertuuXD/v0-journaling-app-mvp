@@ -74,7 +74,7 @@ export function WritingEditor({
           <button
             key={prompt}
             onClick={() => handlePromptClick(prompt)}
-            className="rounded-full border border-border/10 bg-secondary/30 px-5 py-2 text-xs font-medium text-muted-foreground/80 transition-all hover:bg-accent hover:text-foreground"
+            className="rounded-full border border-border/20 bg-secondary/50 px-5 py-2 text-xs font-medium text-muted-foreground/80 transition-all hover:bg-accent hover:text-foreground hover:border-primary/20"
           >
             {prompt}
           </button>
@@ -90,7 +90,7 @@ export function WritingEditor({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={cn(
-            "h-full w-full resize-none bg-transparent text-xl leading-relaxed text-foreground placeholder:text-muted-foreground/30 focus:outline-none md:text-2xl",
+            "h-full w-full resize-none bg-transparent text-xl leading-relaxed text-foreground placeholder:text-muted-foreground/40 focus:outline-none md:text-2xl transition-colors duration-500",
             "scrollbar-none"
           )}
           style={{ 
@@ -104,7 +104,7 @@ export function WritingEditor({
       <div className="flex flex-col gap-10 pb-8">
         {/* Minimal Mood Selector */}
         <div className="flex items-center justify-between px-2">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/40">Mood</span>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/40 font-semibold">Mood</span>
           <div className="flex items-center gap-4">
             {MOODS.map((emoji) => (
               <button
@@ -114,7 +114,7 @@ export function WritingEditor({
                 className={cn(
                   "text-2xl transition-all duration-300",
                   mood === emoji
-                    ? "scale-125 brightness-125"
+                    ? "scale-125 brightness-110"
                     : "opacity-30 grayscale hover:opacity-100 hover:grayscale-0"
                 )}
               >
@@ -129,7 +129,7 @@ export function WritingEditor({
           onClick={() => content.trim() && onSave(content, mood)}
           disabled={!content.trim()}
           className={cn(
-            "w-full rounded-2xl bg-primary py-5 text-sm font-semibold text-primary-foreground transition-all duration-300 shadow-xl shadow-primary/20",
+            "w-full rounded-2xl bg-primary py-5 text-sm font-semibold text-primary-foreground transition-all duration-300 shadow-xl shadow-primary/10",
             content.trim()
               ? "active:scale-[0.98] hover:opacity-90"
               : "opacity-10 cursor-not-allowed"

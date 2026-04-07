@@ -70,7 +70,7 @@ export function JournalApp() {
         <h1 className="text-xl font-medium tracking-tight text-foreground/90">
           Unwind
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setCurrentView("write")}
             className={cn(
@@ -107,6 +107,8 @@ export function JournalApp() {
           >
             <Settings className="h-5 w-5" />
           </button>
+          <div className="ml-1 h-6 w-[1px] bg-border/20 mx-1" />
+          <ThemeToggle />
         </div>
       </header>
 

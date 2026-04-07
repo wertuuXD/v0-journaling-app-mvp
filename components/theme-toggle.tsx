@@ -6,7 +6,7 @@ import { Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
@@ -14,24 +14,26 @@ export function ThemeToggle() {
   }, [])
 
   if (!mounted) {
-    return null
+    return (
+      <div className="h-10 w-10" />
+    )
   }
 
-  const isDark = theme === "dark"
+  const isDark = resolvedTheme === "dark"
 
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "rounded-lg p-2 transition-colors",
-        "text-muted-foreground hover:bg-secondary hover:text-foreground"
+        "rounded-full p-2.5 transition-all duration-300",
+        "text-muted-foreground hover:bg-accent hover:text-foreground active:scale-90"
       )}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (
-        <Sun className="h-5 w-5" />
+        <Sun className="h-5 w-5 animate-in zoom-in-50 duration-500" />
       ) : (
-        <Moon className="h-5 w-5" />
+        <Moon className="h-5 w-5 animate-in zoom-in-50 duration-500" />
       )}
     </button>
   )

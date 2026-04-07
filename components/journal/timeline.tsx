@@ -67,7 +67,7 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
   }
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
       <SearchBar 
         entries={entries}
         onResults={handleSearchResults}
@@ -86,9 +86,8 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
                 onClick={() => onSelect(entry)}
                 className={cn(
                   "group relative w-full rounded-2xl p-6 text-left transition-all duration-300",
-                  "bg-secondary/20 hover:bg-secondary/40 border border-border/10 hover:border-border/30",
-                  "hover:shadow-lg active:scale-[0.99]",
-                  selectedId === entry.id && "ring-1 ring-primary/40 bg-secondary/50"
+                  "bg-card/50 hover:bg-card border border-border/20 hover:border-border/40 hover:shadow-xl hover:shadow-primary/5 active:scale-[0.99]",
+                  selectedId === entry.id && "ring-2 ring-primary/20 bg-card"
                 )}
               >
                 <div className="flex items-start justify-between mb-3">
@@ -97,7 +96,7 @@ export function Timeline({ entries, selectedId, onSelect }: TimelineProps) {
                   </span>
                   {entry.mood && <span className="text-xl group-hover:scale-110 transition-transform">{entry.mood}</span>}
                 </div>
-                <p className="text-sm leading-relaxed text-foreground/70 line-clamp-3">
+                <p className="text-sm leading-relaxed text-foreground/80 line-clamp-3">
                   {entry.content}
                 </p>
               </button>
