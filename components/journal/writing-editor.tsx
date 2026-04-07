@@ -19,7 +19,7 @@ const MOOD_IMAGES: Record<string, string[]> = {
   "😤": ["/moods/frustrated.jpg"],
   "😴": ["/moods/sleepy.jpg"],
   "🤔": ["/moods/thoughtful.jpg"],
-  "😰": ["/moods/anxious.jpg"]
+  "😰": ["/moods/thoughtful.jpg"] // Use thoughtful image temporarily for anxious
 }
 
 const MOOD_LABELS: Record<string, string> = {
