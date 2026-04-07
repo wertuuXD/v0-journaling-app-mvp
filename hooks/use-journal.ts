@@ -89,11 +89,7 @@ export function useJournal() {
     setEntries((prev) => {
       // Merge entries, avoiding duplicates by ID and validating
       const existingIds = new Set(prev.map(entry => entry.id))
-<<<<<<< HEAD
       const newEntries = importedEntries.filter(entry =>
-=======
-      const newEntries = importedEntries.filter(entry =>
->>>>>>> origin/main
         isValidEntry(entry) && !existingIds.has(entry.id)
       )
       

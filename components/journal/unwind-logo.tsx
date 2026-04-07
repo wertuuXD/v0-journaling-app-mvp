@@ -11,13 +11,8 @@ export function UnwindLogo() {
       className="relative flex items-center justify-center mr-2"
       initial={shouldReduceMotion ? { opacity: 1, scale: 1, rotate: 0 } : { scale: 0.8, opacity: 0, rotate: -15 }}
       animate={{ scale: 1, opacity: 1, rotate: 0 }}
-<<<<<<< HEAD
       whileHover={shouldReduceMotion ? {} : {
         scale: 1.1,
-=======
-      whileHover={shouldReduceMotion ? {} : {
-        scale: 1.1,
->>>>>>> origin/main
         rotate: 15,
         transition: { type: "spring", stiffness: 400, damping: 10 }
       }}
@@ -33,13 +28,8 @@ export function UnwindLogo() {
       }}
     >
       <div className="absolute inset-0 bg-primary/20 blur-md rounded-full scale-150 -z-10" />
-<<<<<<< HEAD
       <Leaf
         className="h-6 w-6 text-primary"
-=======
-      <Leaf
-        className="h-6 w-6 text-primary"
->>>>>>> origin/main
         strokeWidth={1.5}
         fill="currentColor"
         fillOpacity={0.15}
