@@ -95,15 +95,19 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         y += 5
       }
 
+      const pageHeight = doc.internal.pageSize.getHeight()
+      const bottom = pageHeight - margin
+
       // Entries
       entries.forEach((entry, index) => {
         const entryDate = new Date(entry.createdAt)
         if (Number.isNaN(entryDate.getTime())) return
 
-        // Check if we need a new page
-        if (y > 270) {
+        // Space needed for Header (Date + Time)
+        const headerHeight = 15
+        if (y + headerHeight > bottom) {
           doc.addPage()
-          y = 20
+          y = margin
         }
 
         const dateStr = format(entryDate, "PPPP")
@@ -122,6 +126,10 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         y += 7
 
         if (entry.mood) {
+          if (y + 7 > bottom) {
+            doc.addPage()
+            y = margin
+          }
           doc.setFontSize(10)
           doc.setTextColor(124, 92, 255)
           const moodLabel = MOOD_LABELS[entry.mood] || entry.mood
@@ -134,14 +142,25 @@ export default function ExportActions({ entries, dateRange }: ExportActionsProps
         doc.setFont("helvetica", "normal")
 
         const lines = doc.splitTextToSize(entry.content, contentWidth)
-        doc.text(lines, margin, y)
+        const lineHeight = 6
 
-        y += (lines.length * 6) + 15
+        lines.forEach((line: string) => {
+          if (y + lineHeight > bottom) {
+            doc.addPage()
+            y = margin
+          }
+          doc.text(line, margin, y)
+          y += lineHeight
+        })
+
+        y += 10 // Extra spacing after entry
 
         // Separator between entries
         if (index < entries.length - 1) {
-          doc.setDrawColor(240, 240, 240)
-          doc.line(margin, y - 8, pageWidth - margin, y - 8)
+          if (y + 5 <= bottom) {
+            doc.setDrawColor(240, 240, 240)
+            doc.line(margin, y - 5, pageWidth - margin, y - 5)
+          }
         }
       })
 
