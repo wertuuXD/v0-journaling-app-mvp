@@ -1,71 +1,32 @@
 # Unwind — No-Pressure Journaling
 
-A beautiful, privacy-focused journaling application built with [Next.js](https://nextjs.org) and [v0](https://v0.app).
+A beautiful, minimalist, and privacy-focused journaling application designed to help you clear your mind without the clutter. Built with [Next.js](https://nextjs.org), [Tailwind CSS](https://tailwindcss.com), and [Framer Motion](https://www.framer.com/motion/).
 
 ## 🌸 **Live App**
 **Start journaling now:** [https://v0-journaling-app-mvp.vercel.app](https://v0-journaling-app-mvp.vercel.app)
 
-*Perfect for mobile and desktop - no signup required!*
+*Perfect for mobile and desktop — no signup required, your thoughts stay yours.*
 
 ## ✨ Features
 
 ### Core Journaling
-- **Writing Editor**: Clean, distraction-free writing interface with mood tracking
-- **Timeline View**: Chronologically organized entries with date grouping
-- **Entry Management**: View, edit, and delete past entries
-- **Mood Tracking**: 6 mood options with beautiful illustrations
-- **Auto-save**: Automatically saves your work as you type
+- **Distraction-Free Editor**: A clean, expansive writing space with relaxed line spacing and autofocus, designed for flow.
+- **Inspiring Prompts**: Not sure where to start? Use quick prompts like *"What happened today?"* or *"How do you feel?"* to break the ice.
+- **7 Expressive Moods**: Track your emotional landscape with a range of moods from *Calm* and *Reflective* to *Frustrated* and *Anxious*.
+- **Timeline Archive**: Your entries are automatically organized into a beautiful chronological timeline with smart date grouping (Today, Yesterday, etc.).
+- **Search & Discovery**: Instantly find past thoughts using full-text search or filter by specific mood emojis.
 
-### Search & Discovery
-- **Full-text Search**: Search through all your journal entries
-- **Mood Search**: Find entries by mood emoji
-- **Instant Results**: Real-time search with result highlighting
+### Export & Sharing
+- **Custom-Styled PDFs**: Export your journal entries into beautiful, readable PDF documents—perfect for printing or long-term storage.
+- **Plain Text Exports**: Generate lightweight `.txt` files for easy sharing or integration with other writing tools.
+- **Smart Date Filtering**: Use the integrated calendar range picker to export specific timeframes—a weekend, a month, or your entire history.
+- **JSON Data Portability**: Download your entire database as a JSON backup at any time.
 
-### Data Management
-- **Export**: Download all entries as JSON backup
-- **Import**: Restore entries from backup files
-- **Duplicate Prevention**: Smart merging avoids duplicate entries
-- **Privacy First**: All data stays on your device
-
-### User Experience
-- **Dark Mode**: Automatic system theme detection with manual toggle
-- **Responsive Design**: Works beautifully on desktop and mobile
-- **Privacy-focused**: No data leaves your device
-- **Fast Performance**: Optimized for smooth interactions
-
-### 🌐 Cloud Sync Setup (Optional)
-
-**Step 1: Create Supabase Account**
-1. Go to [supabase.com](https://supabase.com) and sign up for free
-2. Click "New Project" and create a new database
-3. Wait for the project to be ready (2-3 minutes)
-
-**Step 2: Set Up Database**
-1. Go to **SQL Editor** in your Supabase dashboard
-2. Copy the SQL from `database-setup.sql` in this project
-3. Paste and run the SQL to create the journal_entries table
-4. The table will automatically enable Row Level Security for privacy
-
-**Step 3: Get API Credentials**
-1. Go to **Settings** > **API** in your Supabase dashboard
-2. Copy the **Project URL** and **anon public** key
-3. Create a `.env.local` file in the project root:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-   ```
-
-**Step 4: Restart Development Server**
-```bash
-npm run dev
-```
-
-**Free Tier Benefits:**
-- ✅ 500MB storage (~50,000 journal entries)
-- ✅ 50,000 monthly active users
-- ✅ No credit card required
-- ✅ Full privacy control
-- ✅ Automatic backups
+### Privacy & Experience
+- **Local-First Privacy**: Your data never leaves your device by default. All entries are stored securely in your browser's local storage.
+- **Seamless Dark Mode**: Automatic system theme detection with a manual toggle for late-night reflection.
+- **Premium Animations**: Powered by Framer Motion for a fluid, tactile feel that makes journaling a joy.
+- **Responsive by Design**: A mobile-first vertical layout that looks stunning on every screen size.
 
 ## 🚀 Getting Started
 
@@ -84,19 +45,11 @@ cd v0-journaling-app-mvp
 2. Install dependencies:
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
 3. Run the development server:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -104,90 +57,56 @@ pnpm dev
 ## 📖 Usage Guide
 
 ### Writing Entries
-1. Click the "New entry" button (pen icon)
-2. Start writing in the clean editor
-3. Select a mood to track your emotional state
-4. Save with Ctrl/Cmd + Enter or the Save button
+1. Click the **Pen icon** (New entry) to open the editor.
+2. Choose a **Prompt** if you need a nudge, or just start typing.
+3. Select a **Mood** that fits your current state.
+4. Hit **Save Entry** (or `Ctrl/Cmd + Enter`) to archive your thoughts.
 
-### Searching Entries
-1. Go to the timeline view (book icon)
-2. Click "Search entries..." or press the search button
-3. Type keywords to search through content and moods
-4. Click on results to view full entries
-
-### Managing Data
-1. Click the settings icon to access data management
-2. **Export**: Download all entries as a JSON backup file
-3. **Import**: Upload a backup file to restore entries
-4. Entries are automatically merged without duplicates
-
-### Dark Mode
-- Click the moon/sun icon in the header
-- Automatically follows system preference by default
-- Manual override available anytime
+### Searching & Exporting
+1. Navigate to the **Timeline** (Book icon) to search through past entries.
+2. Head to **Settings** (Gear icon) to manage your data.
+3. Use the **Date Range Picker** to filter which entries you'd like to export.
+4. Choose between **PDF**, **Text**, or **JSON Backup**.
 
 ## 🔧 Technical Details
 
 ### Tech Stack
-- **Framework**: Next.js 16 with App Router
-- **Styling**: Tailwind CSS with custom design system
-- **Components**: Radix UI primitives
-- **Icons**: Lucide React
-- **Themes**: next-themes for dark mode
-- **Storage**: Browser localStorage (client-side only)
+- **Framework**: [Next.js 16](https://nextjs.org) (App Router)
+- **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **PDF Generation**: [jsPDF](https://github.com/parallax/jsPDF)
+- **Icons**: [Lucide React](https://lucide.dev)
+- **Components**: Radix UI & [shadcn/ui](https://ui.shadcn.com)
+- **State Management**: Custom React Hooks with LocalStorage persistence
 
 ### Project Structure
 ```
-├── app/                    # Next.js app directory
-│   ├── layout.tsx         # Root layout with theme provider
-│   ├── page.tsx           # Main journal app page
-│   └── globals.css        # Global styles
+├── app/                    # Next.js app directory (Layouts, Pages)
 ├── components/
-│   ├── theme-provider.tsx # Dark mode context
-│   ├── theme-toggle.tsx   # Theme switcher component
-│   └── journal/           # Journal-specific components
-│       ├── journal-app.tsx    # Main app container
-│       ├── writing-editor.tsx # Entry editor
-│       ├── timeline.tsx       # Timeline view
-│       ├── entry-viewer.tsx   # Entry detail view
-│       ├── search-bar.tsx     # Search functionality
-│       └── data-manager.tsx   # Import/export
+│   ├── ui/                # Base UI components (Radix/Shadcn)
+│   └── journal/           # Core features (Editor, Timeline, Data Management)
 ├── hooks/
-│   └── use-journal.ts     # Journal state management
-└── public/
-    └── moods/            # Mood illustration images
+│   ├── use-journal.ts     # Local state & CRUD logic
+│   └── use-supabase-sync.ts # Experimental cloud sync logic
+└── lib/                   # Utility functions & Supabase client
 ```
 
-### Data Storage
-- All entries stored in browser localStorage
-- JSON format for easy import/export
-- No server-side storage or tracking
-- Completely private and secure
+## 🌐 Cloud Sync (Coming Soon / Experimental)
+
+We are currently working on an optional Cloud Sync feature using **Supabase**. While the UI and logic are present, it requires manual configuration for self-hosting:
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Run the `database-setup.sql` in your Supabase SQL Editor.
+3. Add your `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to a `.env.local` file.
+4. Enable "Cloud Sync" in the app settings.
 
 ## 🎨 Design Principles
 
-- **Minimalism**: Clean, distraction-free interface
-- **Accessibility**: Full keyboard navigation and screen reader support
-- **Performance**: Optimized for fast interactions
-- **Privacy**: No data collection or analytics (except optional Vercel Analytics)
-- **Responsive**: Beautiful on all screen sizes
-
-## 🤝 Contributing
-
-This project was bootstrapped with [v0](https://v0.app). Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+- **Minimalism**: Removing "feature bloat" to prioritize the writing experience.
+- **No-Pressure**: No word counts, no streaks, no judgment. Just a space to be.
+- **Privacy**: Your journal is for your eyes only. No tracking, no analytics on your content.
+- **Accessibility**: High contrast, keyboard-friendly navigation, and reduced motion support.
 
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
-
-## 🔗 Links
-
-- [Continue working on v0 →](https://v0.app/chat/projects/prj_DmedvF8l4W8DPlha9Uk0VkhgpVaN)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [v0 Documentation](https://v0.app/docs)
