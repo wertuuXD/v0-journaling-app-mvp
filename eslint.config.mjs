@@ -34,9 +34,4 @@ export default tseslint.config(
   {
     ignores: [".next/*", "node_modules/*", "*.js"],
   },
-  {
-    rules: {
-      "preserve-caught-error": "off",
-    }
-  }
 );
