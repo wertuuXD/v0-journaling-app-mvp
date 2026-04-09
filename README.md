@@ -156,7 +156,13 @@ The app includes an **optional** cloud backup feature using **Supabase**. Your d
    - Redeploy your application
 5. **GitHub Actions Secrets**:
    - If you want the CI to verify Supabase connectivity, add the same variables to **GitHub Settings** → **Secrets and variables** → **Actions**
-6. Sign in via **Settings → Cloud Backup**
+6. **Google Authentication Setup**:
+   - Go to [Supabase Dashboard](https://supabase.com/dashboard) → **Authentication** → **Providers**.
+   - Enable **Google**.
+   - Follow the instructions to create a project in the [Google Cloud Console](https://console.cloud.google.com/).
+   - Add your **Client ID** and **Client Secret** to the Supabase Google Provider settings.
+   - Add the **Redirect URI** provided by Supabase to your Google Cloud Console OAuth 2.0 Client IDs.
+7. Sign in via **Settings → Cloud Backup**
 
 ### Usage
 - **Sign In**: Click "Continue with Google" in Cloud Backup settings
