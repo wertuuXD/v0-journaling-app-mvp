@@ -39,7 +39,7 @@ const nextConfig = {
           // Restrict browser features
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
           // Content Security Policy - prevents XSS and data injection
           {
