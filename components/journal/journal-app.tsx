@@ -8,7 +8,10 @@ import { EntryViewer } from "./entry-viewer"
 import { DataManager } from "./data-manager"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
-import { BookOpen, PenLine, Settings, Lock } from "lucide-react"
+import { BookOpen, PenLine, Settings, Lock, User as UserIcon, LogOut, Loader2, CheckCircle2 } from "lucide-react"
+import { supabase, isSupabaseConfigured } from "@/lib/supabase"
+import { User } from "@supabase/supabase-js"
+import { toast } from "sonner"
 import { UnwindLogo } from "./unwind-logo"
 import { ErrorBoundary } from "@/components/error-boundary"
 
@@ -19,6 +22,39 @@ export function JournalApp() {
     useJournal()
   const [currentView, setCurrentView] = useState<View>("write")
   const [selectedEntryId, setSelectedEntryId] = useState<string>()
+  const [user, setUser] = useState<User | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [lastSynced, setLastSynced] = useState<Date | null>(null)
+
+  // Handle URL parameters (for OAuth callback redirect)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const view = params.get('view')
+    if (view === 'data') {
+      setCurrentView('data')
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [])
+
+  // Check auth state on mount
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+
+    const checkUser = async () => {
+      const { data: { user } } = await supabase!.auth.getUser()
+      setUser(user)
+    }
+
+    checkUser()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase!.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   // Keyboard navigation handler
   useEffect(() => {
@@ -97,15 +133,51 @@ export function JournalApp() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [currentView])
 
+  /**
+   * Sync a single entry to cloud storage.
+   * Uses upsert with onConflict to prevent duplicates based on user_id + local_created_at.
+   * Called automatically when creating or updating entries if user is signed in.
+   */
+  const syncToCloud = useCallback(async (entry: JournalEntry) => {
+    // Check if Supabase is configured and user is signed in
+    if (!isSupabaseConfigured || !user) return
+    
+    // Set syncing state to true
+    setIsSyncing(true)
+    
+    try {
+      await supabase!.from('journal_entries').upsert({
+        user_id: user.id,
+        content: entry.content,
+        mood: entry.mood,
+        local_created_at: entry.createdAt,
+        local_updated_at: entry.updatedAt,
+      }, {
+        onConflict: 'user_id,local_created_at'
+      })
+      setLastSynced(new Date())
+    } catch {
+      // Silent fail - don't interrupt user workflow
+    } finally {
+      setIsSyncing(false)
+    }
+  }, [user])
+
+  /**
+   * Save a new journal entry and auto-sync to cloud if user is signed in.
+   * The sync happens silently in the background without blocking the UI.
+   */
   const handleSaveNewEntry = useCallback(
     (content: string, mood?: string) => {
       const newEntry = createEntry(content, mood)
       if (newEntry) {
+        // Auto-sync to cloud if signed in (happens in background)
+        syncToCloud(newEntry)
         setCurrentView("timeline")
       }
       // If newEntry is null, the error toast is already shown by useJournal hook
     },
-    [createEntry]
+    [createEntry, syncToCloud]
   )
 
   const handleSelectEntry = useCallback((entry: JournalEntry) => {
@@ -113,27 +185,78 @@ export function JournalApp() {
     setCurrentView("entry")
   }, [])
 
+  /**
+   * Update an existing entry and auto-sync changes to cloud.
+   * Preserves the original ID and timestamps for proper cloud synchronization.
+   */
   const handleUpdateEntry = useCallback(
     (content: string, mood?: string) => {
       if (selectedEntryId) {
-        updateEntry(selectedEntryId, content, mood)
+        // Get current entry before update to preserve metadata
+        const currentEntry = getEntry(selectedEntryId)
+        if (currentEntry) {
+          updateEntry(selectedEntryId, content, mood)
+          // Auto-sync to cloud if signed in (happens in background)
+          const updatedEntry: JournalEntry = {
+            ...currentEntry,
+            content,
+            mood,
+            updatedAt: new Date().toISOString(),
+          }
+          syncToCloud(updatedEntry)
+        }
       }
     },
-    [selectedEntryId, updateEntry]
+    [selectedEntryId, updateEntry, getEntry, syncToCloud]
   )
 
+  /**
+   * Delete an entry from cloud storage when deleted locally.
+   * Uses createdAt timestamp to identify the entry to delete.
+   * Keeps cloud storage in sync with local deletions.
+   */
+  const syncDeleteToCloud = useCallback(async (entryId: string, createdAt: string) => {
+    if (!isSupabaseConfigured || !user) return
+    
+    try {
+      await supabase!.from('journal_entries')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('local_created_at', createdAt)
+      setLastSynced(new Date())
+    } catch {
+      // Silent fail - don't interrupt user workflow
+    }
+  }, [user])
+
+  /**
+   * Delete an entry locally and sync the deletion to cloud.
+   * Uses the entry's createdAt timestamp to identify it in cloud storage.
+   */
   const handleDeleteEntry = useCallback(() => {
     if (selectedEntryId) {
+      const entry = getEntry(selectedEntryId)
+      if (entry) {
+        // Delete from cloud first (silent), then locally
+        syncDeleteToCloud(entry.id, entry.createdAt)
+      }
       deleteEntry(selectedEntryId)
       setSelectedEntryId(undefined)
       setCurrentView("timeline")
     }
-  }, [selectedEntryId, deleteEntry])
+  }, [selectedEntryId, deleteEntry, getEntry, syncDeleteToCloud])
 
   const handleImport = useCallback((importedEntries: JournalEntry[]) => {
     importEntries(importedEntries)
     setCurrentView("timeline")
   }, [importEntries])
+
+  const handleSignOut = useCallback(async () => {
+    if (!isSupabaseConfigured) return
+    await supabase!.auth.signOut()
+    setUser(null)
+    toast.success("Signed out successfully")
+  }, [])
 
   const selectedEntry = selectedEntryId ? getEntry(selectedEntryId) : undefined
 
@@ -200,11 +323,40 @@ export function JournalApp() {
           </button>
           <div className="ml-1 h-6 w-[1px] bg-border/20 mx-1" />
           <ThemeToggle />
+          
+          {/* User indicator */}
+          {user && (
+            <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border/20">
+              {/* Sync indicator */}
+              {isSyncing ? (
+                <div className="flex items-center" title="Syncing to cloud...">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                </div>
+              ) : lastSynced && (
+                <div 
+                  className="flex items-center" 
+                  title={`Last synced: ${lastSynced.toLocaleTimeString()}`}
+                >
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                </div>
+              )}
+              <div className="flex items-center text-muted-foreground" title={user.email || undefined}>
+                <UserIcon className="h-4 w-4" />
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="p-1.5 rounded-md hover:bg-accent transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main content centered with max width and mobile padding */}
-      <main className="mx-auto w-full max-w-2xl flex-1 flex flex-col px-6 pb-20">
+      <main className="mx-auto w-full max-w-2xl flex-1 flex flex-col px-6 pb-8">
         <div className="flex-1 flex flex-col gap-8">
           <div className="relative">
             {currentView === "write" && (
@@ -259,7 +411,7 @@ export function JournalApp() {
             )}
 
             {currentView === "data" && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 absolute inset-0">
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8">
                 <ErrorBoundary fallback={
                   <div className="flex-1 flex items-center justify-center">
                     <p className="text-muted-foreground">Settings temporarily unavailable. Please refresh.</p>
@@ -280,7 +432,7 @@ export function JournalApp() {
       <footer className="mx-auto w-full max-w-2xl px-6 py-6 border-t border-border/10">
         <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground/40">
           <Lock className="h-2.5 w-2.5" />
-          <span>Local & Private</span>
+          <span>Private & Secure</span>
         </div>
       </footer>
     </div>

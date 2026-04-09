@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { cn } from "@/lib/utils"
-import { Download, Upload, Shield, Calendar as CalendarIcon, Loader2 } from "lucide-react"
+import { Download, Upload, Calendar as CalendarIcon, Loader2 } from "lucide-react"
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { DateRange } from "react-day-picker"
 import dynamic from "next/dynamic"
 import { toast } from "sonner"
+import { BackupOption } from "./backup-option"
 
 // Use next/dynamic with ssr: false for components that use libraries incompatible with SSR/Turbopack Node.js environments
 const ExportActions = dynamic(() => import("./export-actions"), {
@@ -193,58 +194,70 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
 
   return (
     <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between px-2">
-          <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-semibold">
-            Export Options
-          </h3>
+      <div className="space-y-8">
+        {/* Cloud Backup Option */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-semibold">
+              Cloud Backup
+            </h3>
+          </div>
+          
+          <BackupOption 
+            entries={entries}
+            onBackupComplete={() => {
+              toast.success("Your journal is now backed up!")
+            }}
+            onRestore={(cloudEntries) => {
+              onImport(cloudEntries)
+              toast.success(`Restored ${cloudEntries.length} entries from cloud!`)
+            }}
+          />
+        </div>
 
+        <div className="h-px bg-border/10" />
+
+        {/* Local Export Options */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-semibold">
+              Export Options
+            </h3>
+          </div>
           <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors",
-                  dateRange?.from && "text-primary font-bold"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "MMM d")
-                  )
-                ) : (
-                  "All Time"
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={1}
-              />
-              <div className="p-3 border-t border-border/50 flex justify-end">
+              <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setDateRange(undefined)}
-                  className="text-[10px] uppercase tracking-widest"
+                  className={cn(
+                    "h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors",
+                    dateRange?.from && "text-primary font-bold"
+                  )}
                 >
-                  Clear Range
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "MMM d")
+                    )
+                  ) : (
+                    "All time"
+                  )}
                 </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  className="rounded-lg border"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ExportActions entries={filteredEntries} dateRange={dateRange} />
@@ -297,17 +310,6 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
         )}
       </div>
 
-      <div className="rounded-3xl bg-secondary/10 p-8 border border-border/5">
-        <div className="flex items-start gap-4">
-          <Shield className="h-5 w-5 text-primary/40 mt-1" />
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground/80">Privacy First</h4>
-            <p className="text-xs leading-relaxed text-muted-foreground/50">
-              Your entries are stored locally on your device. We don't have servers that store your content, making it truly private. Backup your data often to ensure you never lose your thoughts.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
