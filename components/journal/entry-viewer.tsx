@@ -115,25 +115,32 @@ export function EntryViewer({
 
       {/* Delete confirmation modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-md animate-in fade-in duration-300 px-6">
-          <div className="w-full max-w-sm rounded-3xl border border-border/20 bg-card p-10 shadow-2xl animate-in zoom-in-95 duration-300 text-center">
-            <h3 className="mb-3 text-xl font-medium">Delete this entry?</h3>
-            <p className="mb-10 text-sm text-muted-foreground/60 leading-relaxed">
-              This will remove your thoughts from this device forever.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handleDelete}
-                className="w-full rounded-2xl bg-destructive py-4 text-sm font-semibold text-destructive-foreground transition-all hover:opacity-90 active:scale-[0.98]"
-              >
-                Delete Forever
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="w-full rounded-2xl bg-secondary/50 py-4 text-sm font-medium text-foreground/60 transition-all hover:bg-secondary active:scale-[0.98]"
-              >
-                Keep Entry
-              </button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <div className="w-full max-w-md mx-4 rounded-2xl border border-border/30 bg-card p-8 sm:p-10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="text-center space-y-6">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+                <Trash2 className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold">Delete this entry?</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                  This will remove your thoughts from this device forever. This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 rounded-xl bg-secondary py-3 px-4 text-sm font-medium text-foreground/80 transition-all hover:bg-secondary/80 active:scale-[0.98]"
+                >
+                  Keep Entry
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 rounded-xl bg-destructive py-3 px-4 text-sm font-semibold text-destructive-foreground transition-all hover:bg-destructive/90 active:scale-[0.98]"
+                >
+                  Delete Forever
+                </button>
+              </div>
             </div>
           </div>
         </div>
