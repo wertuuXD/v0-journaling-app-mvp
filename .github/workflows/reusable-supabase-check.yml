@@ -1,0 +1,63 @@
+name: Reusable Supabase Check
+
+on:
+  workflow_call:
+    secrets:
+      NEXT_PUBLIC_SUPABASE_URL:
+        required: false
+      NEXT_PUBLIC_SUPABASE_ANON_KEY:
+        required: false
+
+jobs:
+  check-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Supabase Env Variables
+        run: |
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" ]; then
+            echo "Warning: NEXT_PUBLIC_SUPABASE_URL is not set"
+            # We don't fail here if it's optional, but we log it
+          else
+            echo "NEXT_PUBLIC_SUPABASE_URL is set"
+          fi
+          if [ -z "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" ]; then
+            echo "Warning: NEXT_PUBLIC_SUPABASE_ANON_KEY is not set"
+          else
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY is set"
+          fi
+      - name: Verify Supabase Initialization
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Test Supabase Connection
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          # Create a small script to test connection
+          cat <<EOF > test-supabase.js
+          const { createClient } = require('@supabase/supabase-js');
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+          const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+          if (!supabaseUrl || !supabaseAnonKey) {
+            console.log('Supabase credentials missing, skipping connection test');
+            process.exit(0);
+          }
+
+          const supabase = createClient(supabaseUrl, supabaseAnonKey);
+          supabase.from('journal_entries').select('id', { count: 'exact', head: true })
+            .then(({ error }) => {
+              if (error) {
+                console.error('Connection failed:', error.message);
+                process.exit(1);
+              }
+              console.log('Successfully connected to Supabase');
+              process.exit(0);
+            });
+          EOF
+          node test-supabase.js

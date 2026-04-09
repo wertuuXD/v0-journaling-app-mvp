@@ -149,7 +149,14 @@ The app includes an **optional** cloud backup feature using **Supabase**. Your d
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
    ```
-4. Sign in via **Settings → Cloud Backup**
+4. **Vercel Connection**:
+   - Go to your Vercel Dashboard
+   - Select your project → **Settings** → **Environment Variables**
+   - Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Redeploy your application
+5. **GitHub Actions Secrets**:
+   - If you want the CI to verify Supabase connectivity, add the same variables to **GitHub Settings** → **Secrets and variables** → **Actions**
+6. Sign in via **Settings → Cloud Backup**
 
 ### Usage
 - **Sign In**: Click "Continue with Google" in Cloud Backup settings
