@@ -22,6 +22,7 @@ A beautiful, minimalist, and privacy-focused journaling application designed to 
 - **Smart Date Filtering**: Calendar range picker for selective timeframe exports.
 - **JSON Portability**: Complete database backup with enhanced validation and security.
 - **Import Security**: Comprehensive validation with file size limits, content sanitization, and duplicate detection.
+- **Cloud Sync**: Optional Supabase-powered cloud backup with automatic sync, restore, and multi-device support.
 
 ### Performance & Reliability
 - **Smart Storage Management**: Automatic localStorage quota monitoring with warnings and graceful degradation.
@@ -128,14 +129,33 @@ npm run dev
 └── lib/                   # Utility functions & Supabase client
 ```
 
-## 🌐 Cloud Sync (Coming Soon / Experimental)
+## 🌐 Cloud Backup & Sync
 
-We are currently working on an optional Cloud Sync feature using **Supabase**. While the UI and logic are present, it requires manual configuration for self-hosting:
+The app includes an **optional** cloud backup feature using **Supabase**. Your data stays local-first - cloud sync is entirely opt-in.
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Run the `database-setup.sql` in your Supabase SQL Editor.
-3. Add your `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to a `.env.local` file.
-4. Enable "Cloud Sync" in the app settings.
+### Features
+- **Automatic Sync**: New entries automatically sync to cloud when signed in
+- **Smart Restore**: Only downloads missing entries, prevents duplicates
+- **Delete Sync**: Deleting local entries also removes them from cloud
+- **Multi-Device**: Access your journal from multiple devices
+- **Google OAuth**: Quick sign-in with your Google account
+- **Visual Status**: Sync indicator in header shows when syncing and last sync time
+
+### Setup (Optional)
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run `database-setup.sql` in your Supabase SQL Editor
+3. Create `.env.local` with your credentials:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   ```
+4. Sign in via **Settings → Cloud Backup**
+
+### Usage
+- **Sign In**: Click "Continue with Google" in Cloud Backup settings
+- **Auto-Sync**: Entries sync automatically when you create or edit
+- **Restore**: Click "Restore from Cloud" to download entries from another device
+- **Sign Out**: Click the user icon in the header, then logout icon
 
 ## Testing
 

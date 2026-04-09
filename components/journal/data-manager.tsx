@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react"
 import { type JournalEntry } from "@/hooks/use-journal"
 import { cn } from "@/lib/utils"
-import { Download, Upload, Shield, Calendar as CalendarIcon, Loader2 } from "lucide-react"
+import { Download, Upload, Calendar as CalendarIcon, Loader2 } from "lucide-react"
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -208,6 +208,10 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
             onBackupComplete={() => {
               toast.success("Your journal is now backed up!")
             }}
+            onRestore={(cloudEntries) => {
+              onImport(cloudEntries)
+              toast.success(`Restored ${cloudEntries.length} entries from cloud!`)
+            }}
           />
         </div>
 
@@ -306,17 +310,6 @@ export function DataManager({ entries, onImport }: DataManagerProps) {
         )}
       </div>
 
-      <div className="rounded-3xl bg-secondary/10 p-8 border border-border/5">
-        <div className="flex items-start gap-4">
-          <Shield className="h-5 w-5 text-primary/40 mt-1" />
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-foreground/80">Privacy First</h4>
-            <p className="text-xs leading-relaxed text-muted-foreground/50">
-              Your entries are stored locally on your device. We don't have servers that store your content, making it truly private. Backup your data often to ensure you never lose your thoughts.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

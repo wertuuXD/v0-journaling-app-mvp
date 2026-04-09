@@ -14,8 +14,20 @@ const isValidUrl = (url: string | undefined): boolean => {
   }
 }
 
-export const supabase = isValidUrl(supabaseUrl) && supabaseAnonKey && !supabaseAnonKey.includes('your_')
-  ? createClient(supabaseUrl!, supabaseAnonKey)
+// Check if key is a valid Supabase key (JWT format or new publishable format)
+const isValidKey = (key: string | undefined): boolean => {
+  if (!key) return false
+  // Reject placeholder values
+  if (key.includes('your_') || key.includes('placeholder')) return false
+  // Accept new format: sb_publishable_xxx
+  if (key.startsWith('sb_publishable_')) return true
+  // Accept old JWT format: eyJ...
+  if (key.startsWith('eyJ')) return true
+  return false
+}
+
+export const supabase = isValidUrl(supabaseUrl) && isValidKey(supabaseAnonKey)
+  ? createClient(supabaseUrl!, supabaseAnonKey!)
   : null
 
-export const isSupabaseConfigured = !!(isValidUrl(supabaseUrl) && supabaseAnonKey && !supabaseAnonKey.includes('your_'))
+export const isSupabaseConfigured = !!(isValidUrl(supabaseUrl) && isValidKey(supabaseAnonKey))
