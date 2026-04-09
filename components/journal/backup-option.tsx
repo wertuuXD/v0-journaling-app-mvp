@@ -249,13 +249,19 @@ export function BackupOption({ onBackupComplete, onRestore, entries }: BackupPro
         },
       })
 
-      if (error) throw error
+      if (error) {
+        if (error.message.includes('provider is not enabled')) {
+          toast.error(`${provider} sign-in is not enabled in Supabase. Please enable it in your dashboard.`)
+          return
+        }
+        throw error
+      }
 
       // OAuth opens in popup/redirect, backup happens after auth callback
       toast.success(`Redirecting to ${provider}...`)
-    } catch (error) {
+    } catch (error: any) {
       console.error(`${provider} sign in error:`, error)
-      toast.error(`Failed to sign in with ${provider}. Please try again.`)
+      toast.error(error.message || `Failed to sign in with ${provider}. Please try again.`)
     }
   }
 
