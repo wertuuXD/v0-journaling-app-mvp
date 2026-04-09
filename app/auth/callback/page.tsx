@@ -96,7 +96,11 @@ export default function AuthCallback() {
           router.push("/?view=data")
         }
       } catch (error) {
-        console.error("Auth callback error:", error)
+        // Log detailed error only in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Auth callback error:", error)
+        }
+        // Show generic message to users (security: don't leak implementation details)
         toast.error("Sign in failed. Please try again.")
         router.push("/?view=data")
       }
