@@ -3,6 +3,12 @@ import { ErrorBoundary } from "@/components/error-boundary"
 
 // Temporary crypto test - runs once on load in development
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  // Expose crypto to window for console testing
+  import('@/lib/crypto').then(crypto => {
+    (window as any).cryptoTest = crypto
+    console.log('%c[Crypto] Available at window.cryptoTest', 'color: blue; font-weight: bold')
+  })
+
   setTimeout(async () => {
     try {
       const { encrypt, decrypt, isEncrypted } = await import('@/lib/crypto')
